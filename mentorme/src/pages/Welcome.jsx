@@ -15,9 +15,25 @@ export default function Welcome() {
       <Link to="/Swipe" style={styles.btnPrimary}>
         Start Swiping →
       </Link>
+
+      <div style={styles.bottomNav}>
+        <Link to = "/Onboarding" style={styles.navButton}>
+          Onboarding
+        </Link>
+        <Link to="/Swipe" style={styles.navButton}>
+          Swipe
+        </Link>
+        <Link to="/Community" style={styles.navButton}>
+          Community
+        </Link>
+      </div>
+
+      
     </div>
   );
 }
+
+
 
 const styles = {
   wrap: {
@@ -62,5 +78,31 @@ const styles = {
     textDecoration: "none",
     fontWeight: 700,
     border: "1px solid #1a4f31",
+  },
+
+  bottomNav: {
+    width: "100%",
+    maxWidth: 420,
+    display: "flex",
+    justifyContent: "space-around",
+    padding: "12px 0",
+    borderTop: "1px solid #d3e7da",
+    background: "#ffffff",
+    borderRadius: "12px 12px 0 0",
+    boxShadow: "0 -2px 8px rgba(2, 48, 71, 0.08)",
+    position: "fixed",
+    bottom: 0,
+    left: "50%",
+    transform: "translateX(-50%)",
+  },
+
+  navButton: {
+    color: "#023047",
+    textDecoration: "none",
+    fontWeight: 700,
+    fontSize: 16,
+    padding: "6px 12px",
+    borderRadius: 12,
+    background: "#f5fbf7",
   },
 };
