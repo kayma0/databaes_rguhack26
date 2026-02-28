@@ -42,8 +42,8 @@ export default function Community() {
             onClick={() => setChannel(c.id)}
             style={{
               ...styles.tab,
-              background: channel === c.id ? "black" : "white",
-              color: channel === c.id ? "white" : "black",
+              background: channel === c.id ? "#94c3a3" : "white",
+              color: "#023047",
             }}
           >
             {c.label}
@@ -95,39 +95,48 @@ const styles = {
     margin: "0 auto",
     display: "grid",
     gap: 12,
+    background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
+    color: "#023047",
   },
   tabs: { display: "flex", gap: 10 },
   tab: {
     flex: 1,
     padding: 12,
     borderRadius: 14,
-    border: "1px solid #ddd",
+    border: "1px solid #d3e7da",
     fontWeight: 800,
   },
   feed: {
-    border: "1px solid #eee",
+    border: "1px solid #d3e7da",
     borderRadius: 16,
     padding: 12,
     height: "60vh",
     overflowY: "auto",
-    background: "#fafafa",
+    background: "#ffffff",
   },
   msg: {
     background: "white",
-    border: "1px solid #eee",
+    border: "1px solid #d3e7da",
     borderRadius: 14,
     padding: 10,
     marginBottom: 10,
   },
   msgTop: { display: "flex", justifyContent: "space-between", marginBottom: 6 },
   inputRow: { display: "flex", gap: 10 },
-  input: { flex: 1, padding: 12, borderRadius: 14, border: "1px solid #ddd" },
+  input: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 14,
+    border: "1px solid #d3e7da",
+    color: "#023047",
+    background: "#ffffff",
+  },
   send: {
     padding: "12px 14px",
     borderRadius: 14,
-    border: "none",
-    background: "black",
-    color: "white",
+    border: "1px solid #7fb491",
+    background: "#94c3a3",
+    color: "#023047",
     fontWeight: 800,
   },
 };

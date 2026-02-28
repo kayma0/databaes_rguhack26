@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 export default function Home() {
   return (
     <div style={styles.wrap}>
+      <img src="/mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h1 style={styles.h1}>MentorMe</h1>
       <p style={styles.p}>Career help, matched fast.</p>
 
@@ -32,24 +33,33 @@ const styles = {
     justifyContent: "center",
     gap: 12,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+    background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
+    color: "#023047",
+  },
+  logo: {
+    width: "min(180px, 50vw)",
+    height: "auto",
+    margin: "0 auto 2px",
   },
   h1: { margin: 0, fontSize: 34 },
-  p: { margin: 0, opacity: 0.8 },
+  p: { margin: 0, opacity: 0.8, color: "#0c384e" },
   btn: {
     padding: 14,
     borderRadius: 14,
     textAlign: "center",
-    background: "black",
-    color: "white",
+    background: "#94c3a3",
+    color: "#023047",
     textDecoration: "none",
-    fontWeight: 600,
+    fontWeight: 700,
+    border: "1px solid #7fb491",
   },
   btnSecondary: {
     padding: 14,
     borderRadius: 14,
     textAlign: "center",
-    border: "1px solid #ddd",
-    color: "black",
+    border: "1px solid #d3e7da",
+    background: "#ffffff",
+    color: "#023047",
     textDecoration: "none",
     fontWeight: 600,
   },
