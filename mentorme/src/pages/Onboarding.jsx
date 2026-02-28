@@ -3,12 +3,28 @@ import { useNavigate } from "react-router-dom";
 
 export default function Onboarding() {
   const nav = useNavigate();
+  const lookingForOptions = [
+    "Internship",
+    "Graduate Roles",
+    "Entry-Level Roles",
+    "Placement Year",
+  ];
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
+  const [lookingFor, setLookingFor] = useState([]);
   const [interests, setInterests] = useState("");
   const [cvFile, setCvFile] = useState(null);
+
+  function toggleLookingFor(option) {
+    setLookingFor((current) =>
+      current.includes(option)
+        ? current.filter((item) => item !== option)
+        : [...current, option],
+    );
+  }
 
   function handleContinue() {
 
@@ -20,6 +36,7 @@ export default function Onboarding() {
         lastName,
         email,
         role,
+        lookingFor,
         interests,
         cvName: cvFile?.name || null,
       }),
@@ -88,6 +105,22 @@ export default function Onboarding() {
           <option value="Teacher / Education" />
           <option value="Entrepreneur" />
         </datalist>
+      </div>
+
+      <div style={styles.fieldGroup}>
+        <label style={styles.label}>What are you looking for?</label>
+        <div style={styles.checkboxWrap}>
+          {lookingForOptions.map((option) => (
+            <label key={option} style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={lookingFor.includes(option)}
+                onChange={() => toggleLookingFor(option)}
+              />
+              <span>{option}</span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div style={styles.fieldGroup}>
@@ -162,6 +195,21 @@ const styles = {
     fontSize: 15,
     color: "#023047",
     background: "#ffffff",
+  },
+  checkboxWrap: {
+    display: "grid",
+    gap: 8,
+    padding: "8px 10px",
+    border: "1px solid #d3e7da",
+    borderRadius: 12,
+    background: "#ffffff",
+  },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: 14,
+    color: "#244e62",
   },
   textarea: {
     minHeight: 92,
