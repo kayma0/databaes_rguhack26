@@ -18,6 +18,7 @@ export default function Onboarding() {
 
   return (
     <div style={styles.wrap}>
+      <img src="/mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h2 style={styles.h2}>Your Profile</h2>
 
       <label style={styles.label}>Name</label>
@@ -82,6 +83,14 @@ const styles = {
     gap: 10,
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
+  },
+  logo: {
+    width: "min(220px, 58vw)",
+    height: "auto",
+    margin: "6px auto 2px",
+    background: "#e4f2e8",
+    borderRadius: 16,
+    padding: 8,
   },
   h2: { marginTop: 8, marginBottom: 6, color: "#023047" },
   label: { fontSize: 13, fontWeight: 700, opacity: 0.85, color: "#244e62" },
