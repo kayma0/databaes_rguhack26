@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const mentors = [
   {
@@ -124,6 +125,7 @@ const mentors = [
 ];
 
 export default function MentorSwipe() {
+  const navigate = useNavigate();
   const [index, setIndex] = useState(0);
   const current = mentors[index];
 
@@ -152,7 +154,14 @@ export default function MentorSwipe() {
   const swipe = (direction) => {
     const decision = direction === "right" ? "request" : "pass";
     recordSwipe(decision);
-    setIndex((i) => i + 1);
+    const nextIndex = index + 1;
+
+    if (nextIndex >= mentors.length) {
+      navigate("/roadmap");
+      return;
+    }
+
+    setIndex(nextIndex);
     setDx(0);
     setDy(0);
   };

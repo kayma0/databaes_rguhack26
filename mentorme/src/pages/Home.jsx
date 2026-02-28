@@ -55,6 +55,7 @@ const styles = {
     textAlign: "center",
     fontSize: 20,
     fontWeight: 600,
+    fontStyle: "italic",
   },
   btnPrimary: {
     width: "100%",
