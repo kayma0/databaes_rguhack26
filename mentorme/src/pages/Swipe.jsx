@@ -22,83 +22,88 @@ const mentors = [
 export default function MentorSwipe() {
   const [index, setIndex] = useState(0);
   const current = mentors[index];
+
+  // Drag state
   const [dx, setDx] = useState(0);
   const [dy, setDy] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+  // For smooth “throw away” animation
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
-  const outDirectionRef = useRef(null); // "left", "right" , null
 
   const startRef = useRef({ x: 0, y: 0 });
 
-  const decisionPreview = useMemo(() => {
-    if (dx > 60) return "right";
-    if (dx < -60) return "left";
+  const preview = useMemo(() => {
+    if (dx > 60) return "request"; // RIGHT
+    if (dx < -60) return "pass"; // LEFT
     return null;
   }, [dx]);
 
-  const swipe = (decision) => {
+  const recordSwipe = (decision) => {
     if (!current) return;
 
     const saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
     saved.push({
       mentorId: current.id,
-      decision,
+      decision, // "request" or "pass"
       at: new Date().toISOString(),
     });
     localStorage.setItem("mentor_swipes", JSON.stringify(saved));
+  };
 
+  const goNext = () => {
     setIndex((i) => i + 1);
     setDx(0);
     setDy(0);
     setIsDragging(false);
     setIsAnimatingOut(false);
-    outDirectionRef.current = null;
+  };
+
+  const swipe = (direction) => {
+    if (!current) return;
+
+    // RIGHT = request, LEFT = pass
+    const decision = direction === "right" ? "request" : "pass";
+    recordSwipe(decision);
+    goNext();
   };
 
   const onPointerDown = (e) => {
     if (!current || isAnimatingOut) return;
-
     setIsDragging(true);
     startRef.current = { x: e.clientX, y: e.clientY };
-
     e.currentTarget.setPointerCapture?.(e.pointerId);
   };
 
   const onPointerMove = (e) => {
     if (!isDragging || !current || isAnimatingOut) return;
-
-    const nx = e.clientX - startRef.current.x;
-    const ny = e.clientY - startRef.current.y;
-
-    setDx(nx);
-    setDy(ny);
+    setDx(e.clientX - startRef.current.x);
+    setDy(e.clientY - startRef.current.y);
   };
 
   const onPointerUp = () => {
     if (!isDragging || !current || isAnimatingOut) return;
-
     setIsDragging(false);
 
     const threshold = 120;
+
     if (dx > threshold) {
-      outDirectionRef.current = "right";
+      // RIGHT → REQUEST
       setIsAnimatingOut(true);
       setDx(500);
-      setDy(dy);
       setTimeout(() => swipe("right"), 180);
       return;
     }
 
     if (dx < -threshold) {
-      outDirectionRef.current = "left";
+      // LEFT → PASS
       setIsAnimatingOut(true);
       setDx(-500);
-      setDy(dy);
       setTimeout(() => swipe("left"), 180);
       return;
     }
 
+    // snap back
     setDx(0);
     setDy(0);
   };
@@ -125,13 +130,11 @@ export default function MentorSwipe() {
               justifyContent: "center",
             }}
           >
-            {/* Swipe hint badges */}
-            {decisionPreview === "right" && (
+            {/* Preview badges */}
+            {preview === "request" && (
               <div style={styles.badgeRight}>REQUEST</div>
             )}
-            {decisionPreview === "left" && (
-              <div style={styles.badgeLeft}>PASS</div>
-            )}
+            {preview === "pass" && <div style={styles.badgeLeft}>PASS</div>}
 
             <div
               onPointerDown={onPointerDown}
@@ -169,17 +172,17 @@ export default function MentorSwipe() {
             </div>
           </div>
 
-          {/* keep buttons as backup */}
+          {/* Buttons (optional backup) */}
           <div style={styles.actions}>
             <button style={styles.nope} onClick={() => swipe("left")}>
-              ✕
+              Pass
             </button>
             <button style={styles.like} onClick={() => swipe("right")}>
-              ❤
+              Request
             </button>
           </div>
 
-          <p style={styles.small}>Swipe right to request. Left to skip.</p>
+          <p style={styles.small}>Swipe right to request. Left to pass.</p>
         </>
       )}
     </div>
@@ -249,26 +252,26 @@ const styles = {
   actions: {
     display: "flex",
     justifyContent: "center",
-    gap: 16,
+    gap: 12,
     marginTop: 12,
   },
   nope: {
-    width: 60,
-    height: 60,
+    padding: "12px 16px",
     borderRadius: 999,
     border: "1px solid #d3e7da",
-    fontSize: 22,
+    fontSize: 14,
     background: "white",
     color: "#023047",
+    fontWeight: 800,
   },
   like: {
-    width: 60,
-    height: 60,
+    padding: "12px 16px",
     borderRadius: 999,
     border: "1px solid #7fb491",
-    fontSize: 22,
+    fontSize: 14,
     background: "#94c3a3",
     color: "#023047",
+    fontWeight: 900,
   },
 
   small: { textAlign: "center", fontSize: 12, opacity: 0.75 },
