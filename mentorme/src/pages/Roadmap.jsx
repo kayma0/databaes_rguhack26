@@ -24,7 +24,7 @@ export default function Roadmap() {
       </button>
 
       <div style={styles.content}>
-        <h1 style={styles.hello}>Hello {firstName}</h1>
+        <h1 style={styles.hello}>Hello, {firstName}!</h1>
         <h2 style={styles.title}>Here is your roadmap</h2>
         <img
           src="/roadmap4.png"

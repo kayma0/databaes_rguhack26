@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 export default function Home() {
-  const logoSrc = `${import.meta.env.BASE_URL}mentorme.png`;
+  const logoSrc = `${import.meta.env.BASE_URL}mentorWho.jpg`;
 
   return (
     <div style={styles.wrap}>
@@ -34,13 +34,13 @@ const styles = {
   },
   logoWrap: {
     width: "min(360px, 90vw)",
-    background: "#e4f2e8",
+    // background: "#e4f2e8",
     borderRadius: 20,
     padding: 10,
     margin: "34px auto 6px",
     display: "flex",
     justifyContent: "center",
-    boxShadow: "0 4px 12px rgba(2, 48, 71, 0.08)",
+    // boxShadow: "0 4px 12px rgba(2, 48, 71, 0.08)",
   },
   logo: {
     width: "min(340px, 86vw)",
