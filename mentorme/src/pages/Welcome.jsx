@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-export default function Welcome({ firstName = "there", lastName = "" }) {
+export default function Welcome() {
+  const location = useLocation();
+  const { firstName = "there", lastName = "" } = location.state || {};
+
   return (
     <div style={styles.wrap}>
       <h1 style={styles.heading}>
@@ -9,8 +12,7 @@ export default function Welcome({ firstName = "there", lastName = "" }) {
 
       <p style={styles.p}>Ready to find your mentor?</p>
 
-      {/* Correct route path */}
-      <Link to="/swipe" style={styles.btnPrimary}>
+      <Link to="/Swipe" style={styles.btnPrimary}>
         Start Swiping →
       </Link>
     </div>
