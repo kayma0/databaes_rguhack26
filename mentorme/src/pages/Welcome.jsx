@@ -22,20 +22,32 @@ export default function Welcome() {
         Start Swiping →
       </Link>
 
-      <div style={styles.bottomNav}>
-        <Link to = "/Onboarding" style={styles.navButton}>
-          Account
-        </Link>
-        <Link to="/Swipe" style={styles.navButton}>
-          Swipe
-        </Link>
-        <Link to="/Community" style={styles.navButton}>
-          Community
-        </Link>
-      </div>
-
       
+    <div style={styles.bottomNav}>
+        <Link to="/roadmap" style={styles.navItem}>
+            🏠
+            <span style={styles.navLabel}>Home</span>
+        </Link>
+    
+        <Link to="/swipe" style={styles.navItem}>
+            🔍
+            <span style={styles.navLabel}>Swipe</span>
+        </Link>
+    
+            {/* THIS IS COMMUNITY */}
+        <Link to="/community" style={styles.navItem}>
+            👥
+            <span style={styles.navLabel}>Community</span>
+        </Link>
+    
+            {/* THIS IS CHAT / REQUESTS */}
+        <Link to="/chat" style={styles.navItem}>
+            💬
+            <span style={styles.navLabel}>Requests</span>
+        </Link>
     </div>
+
+</div>
   );
 }
 
@@ -103,16 +115,6 @@ const styles = {
     transform: "translateX(-50%)",
   },
 
-  navButton: {
-    color: "#023047",
-    textDecoration: "none",
-    fontWeight: 700,
-    fontSize: 16,
-    padding: "6px 12px",
-    borderRadius: 12,
-    background: "#f5fbf7",
-  },
-
   backBtn: {
     position: "absolute",
     top: 20,
@@ -127,4 +129,15 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
     },
+
+   navItem: {
+    textDecoration: "none",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    fontSize: 10,
+    color: "#7a9e8c",
+    fontWeight: 600,
+  },
 };
