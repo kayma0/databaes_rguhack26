@@ -1,5 +1,4 @@
 import { useState } from "react";
-import TinderCard from "react-tinder-card";
 
 const mentors = [
   {
@@ -28,7 +27,6 @@ export default function MentorSwipe() {
   const swipe = (decision) => {
     if (!current) return;
 
-    // Save swipe in localStorage
     const saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
     saved.push({
       mentorId: current.id,
@@ -54,35 +52,29 @@ export default function MentorSwipe() {
       ) : (
         <>
           <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
-            <TinderCard
-              key={current.id}
-              onSwipe={(dir) => swipe(dir === "right" ? "right" : "left")}
-              preventSwipe={["up", "down"]}
+            <div
+              style={{
+                ...styles.card,
+                background: "linear-gradient(180deg, #9ac8a8 0%, #5c916b 100%)",
+              }}
             >
-              <div
-                style={{
-                  ...styles.card,
-                  backgroundImage: `url(${current.image})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                <div style={styles.match}>{current.match}% match</div>
-                <div style={styles.info}>
-                  <h2 style={styles.name}>{current.name}</h2>
-                  <p style={styles.title}>{current.title}</p>
-                  <div style={{ marginTop: 8 }}>
-                    <div style={styles.sectionTitle}>Helps with</div>
-                    <div style={styles.tags}>
-                      {current.helpsWith.map((t) => (
-                        <span key={t} style={styles.tag}>{t}</span>
-                      ))}
-                    </div>
+              <div style={styles.match}>{current.match}% match</div>
+              <div style={styles.info}>
+                <h2 style={styles.name}>{current.name}</h2>
+                <p style={styles.title}>{current.title}</p>
+                <div style={{ marginTop: 8 }}>
+                  <div style={styles.sectionTitle}>Helps with</div>
+                  <div style={styles.tags}>
+                    {current.helpsWith.map((item) => (
+                      <span key={item} style={styles.tag}>
+                        {item}
+                      </span>
+                    ))}
                   </div>
-                  <p style={styles.bio}>{current.bio}</p>
                 </div>
+                <p style={styles.bio}>{current.bio}</p>
               </div>
-            </TinderCard>
+            </div>
           </div>
 
           <div style={styles.actions}>
