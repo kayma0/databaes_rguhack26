@@ -6,18 +6,9 @@ export default function Home() {
       <img src="mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h1 style={styles.h1}>MentorMe</h1>
       <p style={styles.p}>Guidance for a better tomorrow</p>
-
-      <div style={{ display: "grid", gap: 12, width: "100%" }}>
-        <Link to="/onboarding" style={styles.btn}>
-          Start (CV + Profile)
-        </Link>
-        <Link to="/swipe" style={styles.btnSecondary}>
-          Swipe Mentors
-        </Link>
-        <Link to="/community" style={styles.btnSecondary}>
-          Community
-        </Link>
-      </div>
+      <Link to="/onboarding" style={styles.btnPrimary}>
+        Upload CV to begin
+      </Link>
     </div>
   );
 }
@@ -30,37 +21,41 @@ const styles = {
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    gap: 12,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 28,
+    paddingTop: 90,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
   },
   logo: {
-    width: "min(180px, 50vw)",
+    width: "min(340px, 86vw)",
     height: "auto",
-    margin: "0 auto 2px",
+    margin: "34px auto 6px",
+    background: "#e4f2e8",
+    borderRadius: 20,
+    padding: 10,
   },
-  h1: { margin: 0, fontSize: 34 },
-  p: { margin: 0, opacity: 0.8, color: "#0c384e" },
-  btn: {
-    padding: 14,
-    borderRadius: 14,
+  p: {
+    margin: "4px 0 10px",
+    opacity: 0.9,
+    color: "#0c384e",
     textAlign: "center",
-    background: "#94c3a3",
-    color: "#023047",
+    fontSize: 20,
+    fontWeight: 600,
+  },
+  btnPrimary: {
+    width: "100%",
+    maxWidth: 360,
+    marginTop: 56,
+    padding: 18,
+    borderRadius: 20,
+    textAlign: "center",
+    background: "#1f5f3a",
+    color: "#ffffff",
     textDecoration: "none",
     fontWeight: 700,
-    border: "1px solid #7fb491",
-  },
-  btnSecondary: {
-    padding: 14,
-    borderRadius: 14,
-    textAlign: "center",
-    border: "1px solid #d3e7da",
-    background: "#ffffff",
-    color: "#023047",
-    textDecoration: "none",
-    fontWeight: 600,
+    border: "1px solid #1a4f31",
   },
 };
