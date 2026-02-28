@@ -1,0 +1,133 @@
+import { useEffect, useMemo, useState } from "react";
+
+const channels = [
+  { id: "mentees", label: "Mentees Lounge" },
+  { id: "mentors", label: "Mentor Circle" },
+];
+
+export default function Community() {
+  const [channel, setChannel] = useState("mentees");
+  const [text, setText] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  const key = useMemo(() => `mentorme_comm_${channel}`, [channel]);
+
+  useEffect(() => {
+    setMessages(JSON.parse(localStorage.getItem(key) || "[]"));
+  }, [key]);
+
+  function send() {
+    if (!text.trim()) return;
+    const user = JSON.parse(localStorage.getItem("mentorme_mentee") || "{}");
+    const msg = {
+      id: crypto.randomUUID(),
+      name: user.name || "Guest",
+      text: text.trim(),
+      at: new Date().toISOString(),
+    };
+    const next = [...messages, msg];
+    setMessages(next);
+    localStorage.setItem(key, JSON.stringify(next));
+    setText("");
+  }
+
+  return (
+    <div style={styles.wrap}>
+      <h2 style={{ margin: "8px 0 0" }}>Community</h2>
+
+      <div style={styles.tabs}>
+        {channels.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setChannel(c.id)}
+            style={{
+              ...styles.tab,
+              background: channel === c.id ? "black" : "white",
+              color: channel === c.id ? "white" : "black",
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={styles.feed}>
+        {messages.length === 0 ? (
+          <div style={{ opacity: 0.7 }}>No messages yet. Be the first.</div>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id} style={styles.msg}>
+              <div style={styles.msgTop}>
+                <span style={{ fontWeight: 800 }}>{m.name}</span>
+                <span style={{ fontSize: 12, opacity: 0.6 }}>
+                  {new Date(m.at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+              <div style={{ opacity: 0.9 }}>{m.text}</div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={styles.inputRow}>
+        <input
+          style={styles.input}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Type a message…"
+        />
+        <button style={styles.send} onClick={send}>
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  wrap: {
+    minHeight: "100vh",
+    padding: 18,
+    maxWidth: 420,
+    margin: "0 auto",
+    display: "grid",
+    gap: 12,
+  },
+  tabs: { display: "flex", gap: 10 },
+  tab: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 14,
+    border: "1px solid #ddd",
+    fontWeight: 800,
+  },
+  feed: {
+    border: "1px solid #eee",
+    borderRadius: 16,
+    padding: 12,
+    height: "60vh",
+    overflowY: "auto",
+    background: "#fafafa",
+  },
+  msg: {
+    background: "white",
+    border: "1px solid #eee",
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 10,
+  },
+  msgTop: { display: "flex", justifyContent: "space-between", marginBottom: 6 },
+  inputRow: { display: "flex", gap: 10 },
+  input: { flex: 1, padding: 12, borderRadius: 14, border: "1px solid #ddd" },
+  send: {
+    padding: "12px 14px",
+    borderRadius: 14,
+    border: "none",
+    background: "black",
+    color: "white",
+    fontWeight: 800,
+  },
+};
