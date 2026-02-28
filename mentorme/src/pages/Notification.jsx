@@ -4,8 +4,12 @@ import { Link } from "react-router-dom";
 export default function Notification() {
   const mentorName = useMemo(() => {
     const mentorNames = ["Sarah", "David", "Lena", "Omar", "Samira", "Maya"];
-    const index = Math.floor(Math.random() * mentorNames.length);
-    return mentorNames[index];
+    const indexKey = "mentorme_notification_mentor_index";
+    const lastIndex = Number(localStorage.getItem(indexKey) || "-1");
+    const nextIndex = (lastIndex + 1) % mentorNames.length;
+
+    localStorage.setItem(indexKey, String(nextIndex));
+    return mentorNames[nextIndex];
   }, []);
 
   return (
