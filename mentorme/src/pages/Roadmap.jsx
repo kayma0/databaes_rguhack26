@@ -19,12 +19,15 @@ export default function Roadmap() {
         🔔 Notifications
       </button>
 
+      <button style={styles.backBtn} onClick={() => navigate(-1)}>
+        ← Back
+      </button>
+
       <div style={styles.content}>
         <h1 style={styles.hello}>Hello {firstName}</h1>
         <h2 style={styles.title}>Here is your roadmap</h2>
       </div>
 
-      {/* Bottom Navigation */}
       <div style={styles.bottomNav}>
         <Link to="/roadmap" style={styles.navItem}>
           🏠
@@ -61,6 +64,7 @@ const styles = {
     display: "grid",
     gridTemplateRows: "auto 1fr auto",
     gap: 18,
+    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
   },
@@ -72,8 +76,8 @@ const styles = {
     border: "1px solid #d3e7da",
     borderRadius: 999,
     padding: "8px 12px",
-    background: "#ffffff",
-    color: "#023047",
+    background: "#1f5f3a",
+    color: "#ffffff",
     fontWeight: 900,
   },
 
@@ -96,13 +100,19 @@ const styles = {
   },
 
   bottomNav: {
+    width: "100%",
+    maxWidth: 420,
     display: "flex",
     justifyContent: "space-around",
-    alignItems: "center",
     padding: "12px 0",
     borderTop: "1px solid #d3e7da",
     background: "#ffffff",
-    borderRadius: 16,
+    borderRadius: "12px 12px 0 0",
+    boxShadow: "0 -2px 8px rgba(2, 48, 71, 0.08)",
+    position: "fixed",
+    bottom: 0,
+    left: "50%",
+    transform: "translateX(-50%)",
   },
 
   navItem: {
@@ -123,5 +133,30 @@ const styles = {
   active: {
     color: "#1f5f3a",
     fontWeight: 900,
+  },
+
+  navButton: {
+    color: "#023047",
+    textDecoration: "none",
+    fontWeight: 700,
+    fontSize: 16,
+    padding: "6px 12px",
+    borderRadius: 12,
+    background: "#f5fbf7",
+  },
+
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    border: "none",
+    borderTop: "1px solid #d3e7da",
+    color: "#ffffff",
+    background: "#1f5f3a",
+    padding: "8px 14px",
+    borderRadius: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
   },
 };
