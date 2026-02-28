@@ -3,90 +3,140 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 export default function Welcome() {
   const location = useLocation();
   const navigate = useNavigate();
+
   const { firstName = "there", lastName = "" } = location.state || {};
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div style={styles.wrap}>
-
       <button style={styles.backBtn} onClick={() => navigate(-1)}>
         ← Back
       </button>
 
-      <h1 style={styles.heading}>
-        Hello, {firstName} {lastName}
-      </h1>
+      <div style={styles.content}>
+        <h1 style={styles.heading}>
+          Hello, {firstName} {lastName}
+        </h1>
 
-      <p style={styles.p}>Ready to find your mentor?</p>
+        <p style={styles.p}>Ready to find your mentor?</p>
 
-      <Link to="/Swipe" style={styles.btnPrimary}>
-        Start Swiping →
-      </Link>
-
-      <div style={styles.bottomNav}>
-        <Link to = "/Onboarding" style={styles.navButton}>
-          Account
-        </Link>
-        <Link to="/Swipe" style={styles.navButton}>
-          Swipe
-        </Link>
-        <Link to="/Community" style={styles.navButton}>
-          Community
+        <Link to="/swipe" style={styles.btnPrimary}>
+          Start Swiping →
         </Link>
       </div>
 
-      
+      {/* Roadmap-style Bottom Navbar */}
+      <div style={styles.bottomNav}>
+        <Link
+          to="/roadmap"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/roadmap") && styles.active),
+          }}
+        >
+          🏠
+          <span style={styles.navLabel}>Home</span>
+        </Link>
+
+        <Link
+          to="/swipe"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/swipe") && styles.active),
+          }}
+        >
+          🔍
+          <span style={styles.navLabel}>Swipe</span>
+        </Link>
+
+        <Link
+          to="/community"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/community") && styles.active),
+          }}
+        >
+          👥
+          <span style={styles.navLabel}>Community</span>
+        </Link>
+
+        <Link
+          to="/chat"
+          style={{ ...styles.navItem, ...(isActive("/chat") && styles.active) }}
+        >
+          💬
+          <span style={styles.navLabel}>Requests</span>
+        </Link>
+      </div>
     </div>
   );
 }
-
-
 
 const styles = {
   wrap: {
     minHeight: "100vh",
     padding: 18,
+    paddingBottom: 90, // ✅ important so fixed navbar doesn't cover content
     maxWidth: 420,
     margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 28,
+    display: "grid",
+    gridTemplateRows: "auto 1fr auto",
+    gap: 18,
     position: "relative",
-    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+  },
+
+  backBtn: {
+    justifySelf: "start",
+    marginTop: 2,
+    border: "1px solid #d3e7da",
+    borderRadius: 12,
+    padding: "8px 12px",
+    background: "#1f5f3a",
+    color: "#ffffff",
+    fontWeight: 900,
+    width: "fit-content",
+  },
+
+  content: {
+    alignSelf: "center",
+    textAlign: "center",
+    display: "grid",
+    gap: 14,
+    justifyItems: "center",
   },
 
   heading: {
-    margin: "10px 0 0",
-    fontSize: 28,
+    margin: 0,
+    fontSize: 30,
     fontWeight: 900,
-    textAlign: "center",
   },
 
   p: {
-    margin: "4px 0 10px",
+    margin: 0,
     opacity: 0.9,
-    textAlign: "center",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 600,
+    color: "#0c384e",
   },
 
   btnPrimary: {
     width: "100%",
     maxWidth: 360,
-    marginTop: 56,
+    marginTop: 22,
     padding: 18,
     borderRadius: 20,
     textAlign: "center",
     background: "#1f5f3a",
     color: "#ffffff",
     textDecoration: "none",
-    fontWeight: 700,
+    fontWeight: 800,
     border: "1px solid #1a4f31",
   },
 
+  // ✅ EXACT same navbar as Roadmap
   bottomNav: {
     width: "100%",
     maxWidth: 420,
@@ -103,28 +153,23 @@ const styles = {
     transform: "translateX(-50%)",
   },
 
-  navButton: {
-    color: "#023047",
+  navItem: {
     textDecoration: "none",
-    fontWeight: 700,
-    fontSize: 16,
-    padding: "6px 12px",
-    borderRadius: 12,
-    background: "#f5fbf7",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    fontSize: 22,
+    color: "#7a9e8c",
+    fontWeight: 600,
   },
 
-  backBtn: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-    border: "none",
-    borderTop: "1px solid #d3e7da",
-    color: "#ffffff",
-    background: "#1f5f3a",
-    padding: "8px 14px",
-    borderRadius: 12,
-    fontWeight: 700,
-    cursor: "pointer",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-    },
+  navLabel: {
+    fontSize: 11,
+  },
+
+  active: {
+    color: "#1f5f3a",
+    fontWeight: 900,
+  },
 };

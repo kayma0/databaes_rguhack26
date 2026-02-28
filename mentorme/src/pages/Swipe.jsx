@@ -136,7 +136,7 @@ export default function Swipe() {
         )}
       </div>
 
-      {/* Bottom Nav */}
+      {/* Roadmap-style Bottom Navbar */}
       <div style={styles.bottomNav}>
         <Link
           to="/roadmap"
@@ -183,11 +183,13 @@ const styles = {
   wrap: {
     minHeight: "100vh",
     padding: 18,
+    paddingBottom: 90, // important for fixed navbar
     maxWidth: 420,
     margin: "0 auto",
     display: "grid",
     gridTemplateRows: "auto 1fr auto",
     gap: 14,
+    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
   },
 
@@ -247,7 +249,6 @@ const styles = {
 
   name: { fontSize: 26, fontWeight: 950, margin: 0 },
   title: { margin: "6px 0 10px", fontSize: 14, opacity: 0.88 },
-
   pillsRow: { display: "flex", gap: 8, marginBottom: 10 },
 
   pill: {
@@ -300,24 +301,40 @@ const styles = {
     zIndex: 5,
   },
 
+  // Roadmap-style navbar
   bottomNav: {
+    width: "100%",
+    maxWidth: 420,
     display: "flex",
+    justifyContent: "space-around",
+    padding: "12px 0",
     borderTop: "1px solid #d3e7da",
     background: "#ffffff",
+    borderRadius: "12px 12px 0 0",
+    boxShadow: "0 -2px 8px rgba(2, 48, 71, 0.08)",
+    position: "fixed",
+    bottom: 0,
+    left: "50%",
+    transform: "translateX(-50%)",
   },
 
   navItem: {
-    flex: 1,
     textDecoration: "none",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    padding: "12px 0",
+    gap: 4,
     fontSize: 22,
     color: "#7a9e8c",
+    fontWeight: 600,
   },
 
-  navLabel: { fontSize: 11 },
-  active: { color: "#1f5f3a", fontWeight: 900 },
+  navLabel: {
+    fontSize: 11,
+  },
+
+  active: {
+    color: "#1f5f3a",
+    fontWeight: 900,
+  },
 };
