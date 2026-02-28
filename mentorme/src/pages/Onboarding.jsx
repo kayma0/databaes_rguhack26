@@ -11,7 +11,6 @@ export default function Onboarding() {
   const [cvFile, setCvFile] = useState(null);
 
   function handleContinue() {
-    // For demo: store minimal data in localStorage
     localStorage.setItem(
       "mentorme_mentee",
       JSON.stringify({
@@ -24,7 +23,7 @@ export default function Onboarding() {
         cvName: cvFile?.name || null,
       }),
     );
-    nav("/swipe");
+    nav("/Welcome");
   }
 
   return (
@@ -112,7 +111,8 @@ export default function Onboarding() {
           <div style={{ opacity: 0.8 }}>{cvFile.name}</div>
         </div>
       )}
-  <Link
+
+  {/* <Link
       to="/Welcome"
       style={{
         ...styles.btn,
@@ -123,7 +123,7 @@ export default function Onboarding() {
       }}
 >
       Continue
-    </Link>
+    </Link> */}
       <button
         style={{ ...styles.btn, opacity: firstName && lastName && email ? 1 : 0.5 }}
         disabled={!firstName || !lastName || !email}

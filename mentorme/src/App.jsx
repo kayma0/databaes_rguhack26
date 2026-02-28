@@ -13,6 +13,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/menu" element={<Menu />} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/welcome" element={<Welcome />} />
       <Route path="/swipe" element={<Swipe />} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/community" element={<Community />} />
