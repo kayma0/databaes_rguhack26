@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { mentors } from "../data/mentors.js";
 
 export default function Chat() {
-  const swipes = JSON.parse(localStorage.getItem("mentorme_swipes") || "[]");
-  const liked = swipes.filter((s) => s.decision === "right");
+  const swipes = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
+  const liked = swipes.filter((s) => s.decision === "right" || s.decision === "request");
+  const mentorById = new Map(mentors.map((mentor) => [String(mentor.id), mentor.name]));
 
   return (
     <div style={styles.wrap}>
@@ -17,7 +19,7 @@ export default function Chat() {
         <ul style={styles.list}>
           {liked.map((x) => (
             <li key={x.at} style={styles.listItem}>
-              {x.mentorId} — requested
+              {mentorById.get(String(x.mentorId)) || "Mentor"} — requested
             </li>
           ))}
         </ul>

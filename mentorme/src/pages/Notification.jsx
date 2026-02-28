@@ -1,15 +1,53 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { mentors } from "../data/mentors.js";
+
+function shuffleNames(names) {
+  const copy = [...names];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 export default function Notification() {
   const mentorName = useMemo(() => {
-    const mentorNames = ["Sarah", "David", "Lena", "Omar", "Samira", "Maya"];
-    const indexKey = "mentorme_notification_mentor_index";
-    const lastIndex = Number(localStorage.getItem(indexKey) || "-1");
-    const nextIndex = (lastIndex + 1) % mentorNames.length;
+    const allMentorNames = [...new Set(mentors.map((mentor) => mentor.name))];
+    const orderKey = "mentorme_notification_name_order";
+    const indexKey = "mentorme_notification_name_index";
 
-    localStorage.setItem(indexKey, String(nextIndex));
-    return mentorNames[nextIndex];
+    let order = [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(orderKey) || "[]");
+      if (Array.isArray(parsed)) {
+        order = parsed.filter((name) => allMentorNames.includes(name));
+      }
+    } catch {
+      order = [];
+    }
+
+    if (order.length !== allMentorNames.length) {
+      order = shuffleNames(allMentorNames);
+      localStorage.setItem(orderKey, JSON.stringify(order));
+      localStorage.setItem(indexKey, "0");
+      return order[0];
+    }
+
+    const currentIndex = Number(localStorage.getItem(indexKey) || "0");
+    const safeIndex = Number.isFinite(currentIndex) ? currentIndex : 0;
+    const nextName = order[safeIndex] || order[0];
+
+    const nextIndex = safeIndex + 1;
+    if (nextIndex >= order.length) {
+      const reshuffled = shuffleNames(allMentorNames);
+      localStorage.setItem(orderKey, JSON.stringify(reshuffled));
+      localStorage.setItem(indexKey, "0");
+    } else {
+      localStorage.setItem(indexKey, String(nextIndex));
+    }
+
+    return nextName;
   }, []);
 
   return (
