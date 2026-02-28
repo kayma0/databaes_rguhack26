@@ -23,8 +23,9 @@ export default function Onboarding() {
         cvName: cvFile?.name || null,
       }),
     );
-    nav("/Welcome");
+    nav("/Welcome", { state: { firstName, lastName } });
   }
+
 
   return (
     <div style={styles.wrap}>
@@ -112,18 +113,6 @@ export default function Onboarding() {
         </div>
       )}
 
-  {/* <Link
-      to="/Welcome"
-      style={{
-        ...styles.btn,
-        opacity: firstName ? 1 : 0.5,
-        pointerEvents: firstName ? "auto" : "none", // disables click
-        display: "inline-block",
-        textAlign: "center",
-      }}
->
-      Continue
-    </Link> */}
       <button
         style={{ ...styles.btn, opacity: firstName && lastName && email ? 1 : 0.5 }}
         disabled={!firstName || !lastName || !email}
