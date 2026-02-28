@@ -1,9 +1,11 @@
 import { useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { mentors } from "../data/mentors.js";
 
-export default function MentorSwipe() {
+export default function Swipe() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [index, setIndex] = useState(0);
   const current = mentors[index];
 
@@ -12,6 +14,8 @@ export default function MentorSwipe() {
   const [isDragging, setIsDragging] = useState(false);
 
   const startRef = useRef({ x: 0, y: 0 });
+
+  const isActive = (path) => location.pathname === path;
 
   const preview = useMemo(() => {
     if (dx > 60) return "request";
@@ -32,6 +36,7 @@ export default function MentorSwipe() {
   const swipe = (direction) => {
     const decision = direction === "right" ? "request" : "pass";
     recordSwipe(decision);
+
     const nextIndex = index + 1;
 
     if (nextIndex >= mentors.length) {
@@ -84,15 +89,15 @@ export default function MentorSwipe() {
         <div style={styles.sub}>Swipe right to request</div>
       </div>
 
-      {!current ? (
-        <div style={styles.done}>
-          <h3 style={{ margin: 0 }}>No more mentors</h3>
-          <p style={{ margin: "8px 0 0", opacity: 0.75 }}>
-            You can revisit later or check community.
-          </p>
-        </div>
-      ) : (
-        <>
+      <div style={styles.main}>
+        {!current ? (
+          <div style={styles.done}>
+            <h3 style={{ margin: 0 }}>No more mentors</h3>
+            <p style={{ margin: "8px 0 0", opacity: 0.75 }}>
+              You can revisit later or check community.
+            </p>
+          </div>
+        ) : (
           <div style={styles.center}>
             {preview === "request" && (
               <div style={styles.badgeRight}>REQUEST</div>
@@ -113,14 +118,12 @@ export default function MentorSwipe() {
             >
               <img src={current.img} alt={current.name} style={styles.photo} />
               <div style={styles.gradient} />
-
               <div style={styles.match}>{current.match}% match</div>
 
               <div style={styles.info}>
                 <h2 style={styles.name}>{current.name}</h2>
                 <p style={styles.title}>{current.title}</p>
 
-                {/* Pills row */}
                 <div style={styles.pillsRow}>
                   <span style={styles.pill}>{current.industry}</span>
                   <span style={styles.pillSoft}>{current.company}</span>
@@ -130,21 +133,48 @@ export default function MentorSwipe() {
               </div>
             </div>
           </div>
+        )}
+      </div>
 
-          <div style={styles.actions}>
-            <button style={styles.backBtn} onClick={() => navigate(-1)}>
-            ← Back
-            </button>
+      {/* Bottom Nav */}
+      <div style={styles.bottomNav}>
+        <Link
+          to="/roadmap"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/roadmap") && styles.active),
+          }}
+        >
+          🏠 <span style={styles.navLabel}>Home</span>
+        </Link>
 
-            <button style={styles.nope} onClick={() => swipe("left")}>
-              Pass
-            </button>
-            <button style={styles.like} onClick={() => swipe("right")}>
-              Request
-            </button>
-          </div>
-        </>
-      )}
+        <Link
+          to="/swipe"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/swipe") && styles.active),
+          }}
+        >
+          🔍 <span style={styles.navLabel}>Swipe</span>
+        </Link>
+
+        <Link
+          to="/community"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/community") && styles.active),
+          }}
+        >
+          👥 <span style={styles.navLabel}>Community</span>
+        </Link>
+
+        <Link
+          to="/chat"
+          style={{ ...styles.navItem, ...(isActive("/chat") && styles.active) }}
+        >
+          💬 <span style={styles.navLabel}>Requests</span>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -156,17 +186,16 @@ const styles = {
     maxWidth: 420,
     margin: "0 auto",
     display: "grid",
+    gridTemplateRows: "auto 1fr auto",
     gap: 14,
-    alignContent: "start",
-    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
-    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
   },
 
   topBar: { marginTop: 6 },
   h2: { margin: 0, fontSize: 22, fontWeight: 900, color: "#023047" },
   sub: { marginTop: 4, fontSize: 12, opacity: 0.7, color: "#023047" },
 
+  main: { display: "grid", gap: 12, marginTop: 20 },
   center: { position: "relative", display: "flex", justifyContent: "center" },
 
   card: {
@@ -185,7 +214,6 @@ const styles = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transform: "scale(1.02)",
   },
 
   gradient: {
@@ -217,84 +245,28 @@ const styles = {
     zIndex: 3,
   },
 
-  name: {
-    fontSize: 26,
-    fontWeight: 950,
-    margin: 0,
-    letterSpacing: 0.2,
-  },
+  name: { fontSize: 26, fontWeight: 950, margin: 0 },
+  title: { margin: "6px 0 10px", fontSize: 14, opacity: 0.88 },
 
-  title: {
-    margin: "6px 0 10px",
-    fontSize: 14,
-    fontWeight: 650,
-    opacity: 0.88,
-  },
-
-  pillsRow: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 10,
-  },
+  pillsRow: { display: "flex", gap: 8, marginBottom: 10 },
 
   pill: {
-    display: "inline-flex",
-    alignItems: "center",
     padding: "8px 12px",
     borderRadius: 999,
     fontSize: 13,
     fontWeight: 900,
     background: "rgba(255,255,255,0.24)",
-    border: "1px solid rgba(255,255,255,0.22)",
-    backdropFilter: "blur(10px)",
-    WebkitBackdropFilter: "blur(10px)",
   },
 
   pillSoft: {
-    display: "inline-flex",
-    alignItems: "center",
     padding: "8px 12px",
     borderRadius: 999,
     fontSize: 13,
     fontWeight: 900,
     background: "rgba(255,255,255,0.14)",
-    border: "1px solid rgba(255,255,255,0.18)",
-    backdropFilter: "blur(10px)",
-    WebkitBackdropFilter: "blur(10px)",
   },
 
-  bio: {
-    margin: 0,
-    fontSize: 13,
-    lineHeight: 1.45,
-    opacity: 0.92,
-  },
-
-  actions: {
-    display: "flex",
-    justifyContent: "center",
-    gap: 12,
-    marginTop: 10,
-  },
-
-  nope: {
-    padding: "12px 18px",
-    borderRadius: 999,
-    border: "1px solid #cfe4d7",
-    background: "white",
-    fontWeight: 900,
-    color: "#023047",
-  },
-
-  like: {
-    padding: "12px 18px",
-    borderRadius: 999,
-    border: "none",
-    background: "#1f5f3a",
-    color: "white",
-    fontWeight: 900,
-  },
+  bio: { margin: 0, fontSize: 13, lineHeight: 1.45 },
 
   done: {
     padding: 16,
@@ -307,41 +279,45 @@ const styles = {
   badgeRight: {
     position: "absolute",
     top: 42,
-    right: 34, // ✅ right side for REQUEST
+    right: 34,
     padding: "8px 12px",
     background: "rgba(31, 95, 58, 0.92)",
     color: "white",
     fontWeight: 950,
     borderRadius: 10,
     zIndex: 5,
-    letterSpacing: 0.4,
   },
 
   badgeLeft: {
     position: "absolute",
     top: 42,
-    left: 34, // ✅ left side for PASS
+    left: 34,
     padding: "8px 12px",
     background: "rgba(190, 50, 50, 0.92)",
     color: "white",
     fontWeight: 950,
     borderRadius: 10,
     zIndex: 5,
-    letterSpacing: 0.4,
   },
 
-  backBtn: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    border: "none",
+  bottomNav: {
+    display: "flex",
     borderTop: "1px solid #d3e7da",
-    color: "#ffffff",
-    background: "#1f5f3a",
-    padding: "8px 14px",
-    borderRadius: 12,
-    fontWeight: 700,
-    cursor: "pointer",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-    },
+    background: "#ffffff",
+  },
+
+  navItem: {
+    flex: 1,
+    textDecoration: "none",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "12px 0",
+    fontSize: 22,
+    color: "#7a9e8c",
+  },
+
+  navLabel: { fontSize: 11 },
+  active: { color: "#1f5f3a", fontWeight: 900 },
 };
