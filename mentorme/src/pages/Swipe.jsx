@@ -1,73 +1,93 @@
-import { useMemo, useState } from "react";
-import { mentors as seed } from "../data/mentors.js";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import TinderCard from "react-tinder-card";
 
-export default function Swipe() {
+const mentors = [
+  {
+    id: 1,
+    name: "Sarah",
+    title: "Software Engineer",
+    match: 92,
+    helpsWith: ["React", "Node.js", "Career Advice"],
+    bio: "I love mentoring juniors in software engineering and helping them grow their careers.",
+  },
+  {
+    id: 2,
+    name: "David",
+    title: "Data Scientist",
+    match: 87,
+    helpsWith: ["Python", "Machine Learning", "Resume Review"],
+    bio: "Passionate about data and helping others get into data science roles.",
+  },
+];
+
+export default function MentorSwipe() {
   const [index, setIndex] = useState(0);
-  const mentors = useMemo(() => seed, []);
 
   const current = mentors[index];
 
-  function swipe(decision) {
-    // Save decisions for demo
-    const saved = JSON.parse(localStorage.getItem("mentorme_swipes") || "[]");
+  const swipe = (decision) => {
+    if (!current) return;
+
+    // Save swipe in localStorage
+    const saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
     saved.push({
       mentorId: current.id,
       decision,
       at: new Date().toISOString(),
     });
-    localStorage.setItem("mentorme_swipes", JSON.stringify(saved));
+    localStorage.setItem("mentor_swipes", JSON.stringify(saved));
 
-    setIndex((i) => Math.min(i + 1, mentors.length));
-  }
+    setIndex((i) => i + 1);
+  };
 
   return (
     <div style={styles.wrap}>
-      <div style={styles.top}>
-        <h2 style={{ margin: 0 }}>Mentor Matches</h2>
-        <Link to="/community" style={styles.link}>
-          Community
-        </Link>
-      </div>
+      <h2 style={{ marginBottom: 10 }}>Mentor Matches</h2>
 
       {!current ? (
         <div style={styles.done}>
-          <h3>No more mentors 🎉</h3>
+          <h3>No more mentors</h3>
           <p style={{ opacity: 0.8 }}>
-            You can revisit later or check community.
+            You can revisit later or check the community.
           </p>
-          <Link to="/chat" style={styles.btn}>
-            Go to Requests / Chat →
-          </Link>
         </div>
       ) : (
         <>
-          <div style={styles.card}>
-            <div style={styles.match}>{current.match}% match</div>
-            <div style={styles.name}>{current.name}</div>
-            <div style={styles.title}>{current.title}</div>
-
-            <div style={{ marginTop: 12 }}>
-              <div style={styles.sectionTitle}>Helps with</div>
-              <div style={styles.tags}>
-                {current.helpsWith.map((t) => (
-                  <span key={t} style={styles.tag}>
-                    {t}
-                  </span>
-                ))}
+          <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+            <TinderCard
+              key={current.id}
+              onSwipe={(dir) => swipe(dir === "right" ? "right" : "left")}
+              preventSwipe={["up", "down"]}
+            >
+              <div
+                style={{
+                  ...styles.card,
+                  backgroundImage: `url(${current.image})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                <div style={styles.match}>{current.match}% match</div>
+                <div style={styles.info}>
+                  <h2 style={styles.name}>{current.name}</h2>
+                  <p style={styles.title}>{current.title}</p>
+                  <div style={{ marginTop: 8 }}>
+                    <div style={styles.sectionTitle}>Helps with</div>
+                    <div style={styles.tags}>
+                      {current.helpsWith.map((t) => (
+                        <span key={t} style={styles.tag}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <p style={styles.bio}>{current.bio}</p>
+                </div>
               </div>
-            </div>
-
-            <p style={styles.bio}>{current.bio}</p>
+            </TinderCard>
           </div>
 
           <div style={styles.actions}>
-            <button style={styles.nope} onClick={() => swipe("left")}>
-              ✕
-            </button>
-            <button style={styles.like} onClick={() => swipe("right")}>
-              ❤
-            </button>
+            <button style={styles.nope} onClick={() => swipe("left")}>✕</button>
+            <button style={styles.like} onClick={() => swipe("right")}>❤</button>
           </div>
 
           <p style={styles.small}>Swipe right to request. Left to skip.</p>
@@ -89,20 +109,21 @@ const styles = {
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
   },
-  top: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  link: { textDecoration: "none", fontWeight: 700, color: "#023047" },
   card: {
-    position: "relative",
-    padding: 16,
+    width: 350,
+    height: 550,
     borderRadius: 18,
-    border: "1px solid #d3e7da",
-    background: "white",
     boxShadow: "0 8px 24px rgba(2, 48, 71, 0.08)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    padding: 16,
+    color: "#fff",
+  },
+  info: {
+    background: "rgba(0,0,0,0.4)",
+    borderRadius: 12,
+    padding: 12,
   },
   match: {
     position: "absolute",
@@ -116,28 +137,23 @@ const styles = {
     color: "#023047",
     background: "#ffffff",
   },
-  name: { fontSize: 28, fontWeight: 900, marginTop: 18 },
-  title: { opacity: 0.85, fontWeight: 600, color: "#244e62" },
-  sectionTitle: {
-    fontWeight: 800,
-    fontSize: 13,
-    opacity: 0.8,
-    marginBottom: 8,
-  },
-  tags: { display: "flex", flexWrap: "wrap", gap: 8 },
+  name: { fontSize: 22, fontWeight: 900 },
+  title: { opacity: 0.85, fontWeight: 600 },
+  sectionTitle: { fontWeight: 700, fontSize: 12, opacity: 0.8, marginBottom: 4 },
+  tags: { display: "flex", flexWrap: "wrap", gap: 6 },
   tag: {
-    fontSize: 12,
-    padding: "6px 10px",
+    fontSize: 11,
+    padding: "4px 8px",
     borderRadius: 999,
     border: "1px solid #d3e7da",
     background: "#f5fbf7",
     color: "#023047",
   },
-  bio: { marginTop: 14, opacity: 0.85, lineHeight: 1.35, color: "#244e62" },
-  actions: { display: "flex", justifyContent: "center", gap: 16 },
+  bio: { marginTop: 8, fontSize: 12, lineHeight: 1.35 },
+  actions: { display: "flex", justifyContent: "center", gap: 16, marginTop: 12 },
   nope: {
-    width: 64,
-    height: 64,
+    width: 60,
+    height: 60,
     borderRadius: 999,
     border: "1px solid #d3e7da",
     fontSize: 22,
@@ -145,30 +161,20 @@ const styles = {
     color: "#023047",
   },
   like: {
-    width: 64,
-    height: 64,
+    width: 60,
+    height: 60,
     borderRadius: 999,
     border: "1px solid #7fb491",
     fontSize: 22,
     background: "#94c3a3",
     color: "#023047",
   },
-  small: { textAlign: "center", fontSize: 12, opacity: 0.75, color: "#244e62" },
+  small: { textAlign: "center", fontSize: 12, opacity: 0.75 },
   done: {
     padding: 16,
     borderRadius: 18,
     border: "1px solid #d3e7da",
     background: "#ffffff",
-  },
-  btn: {
-    display: "inline-block",
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 14,
-    background: "#94c3a3",
-    color: "#023047",
-    textDecoration: "none",
-    fontWeight: 800,
-    border: "1px solid #7fb491",
+    textAlign: "center",
   },
 };
