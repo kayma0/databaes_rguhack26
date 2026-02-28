@@ -1,42 +1,81 @@
-#root {
-  max-width: 1280px;
+.app {
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+  background: linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%);
+  color: #023047;
+}
+
+.hero {
+  max-width: 760px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.hero-logo {
+  width: min(220px, 55vw);
+  height: auto;
+  margin-bottom: 1rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  letter-spacing: 0.02em;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.brand-title {
+  font-weight: 800;
+  line-height: 1.1;
 }
 
-.card {
-  padding: 2em;
+.brand-title-primary {
+  color: #023047;
 }
 
-.read-the-docs {
-  color: #888;
+.brand-title-accent {
+  color: #94c3a3;
+}
+
+.hero-subtitle {
+  margin: 1rem auto 1.5rem;
+  max-width: 620px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #0c384e;
+}
+
+.hero-cta {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #023047;
+  background-color: #94c3a3;
+}
+
+.features {
+  max-width: 1000px;
+  margin: 2.25rem auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.feature-card {
+  background: #ffffff;
+  border: 1px solid #d3e7da;
+  border-radius: 14px;
+  padding: 1.2rem;
+  box-shadow: 0 8px 24px rgba(2, 48, 71, 0.08);
+}
+
+.feature-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.feature-card p {
+  margin: 0.6rem 0 0;
+  color: #244e62;
 }
