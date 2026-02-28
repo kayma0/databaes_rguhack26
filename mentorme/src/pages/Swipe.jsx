@@ -13,7 +13,7 @@ const mentors = [
   },
   {
     id: 2,
-    name: "David",
+    name: "Mariah",
     title: "Data Scientist",
     industry: "Finance",
     company: "JP Morgan",
@@ -92,21 +92,21 @@ export default function MentorSwipe() {
 
   return (
     <div style={styles.wrap}>
-      <h2 style={{ marginBottom: 10 }}>Mentor Matches</h2>
+      <div style={styles.topBar}>
+        <h2 style={styles.h2}>Mentor Matches</h2>
+        <div style={styles.sub}>Swipe right to request</div>
+      </div>
 
       {!current ? (
         <div style={styles.done}>
-          <h3>No more mentors</h3>
+          <h3 style={{ margin: 0 }}>No more mentors</h3>
+          <p style={{ margin: "8px 0 0", opacity: 0.75 }}>
+            You can revisit later or check community.
+          </p>
         </div>
       ) : (
         <>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
+          <div style={styles.center}>
             {preview === "request" && (
               <div style={styles.badgeRight}>REQUEST</div>
             )}
@@ -116,6 +116,7 @@ export default function MentorSwipe() {
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
               style={{
                 ...styles.card,
                 transform: `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`,
@@ -125,17 +126,17 @@ export default function MentorSwipe() {
             >
               <img src={current.img} alt={current.name} style={styles.photo} />
               <div style={styles.gradient} />
+
               <div style={styles.match}>{current.match}% match</div>
 
               <div style={styles.info}>
                 <h2 style={styles.name}>{current.name}</h2>
                 <p style={styles.title}>{current.title}</p>
 
-                {/* NEW INDUSTRY SECTION */}
-                <div style={{ marginTop: 8 }}>
-                  <div style={styles.sectionTitle}>Industry</div>
-                  <div style={styles.industryBadge}>{current.industry}</div>
-                  <div style={styles.company}>{current.company}</div>
+                {/* Pills row */}
+                <div style={styles.pillsRow}>
+                  <span style={styles.pill}>{current.industry}</span>
+                  <span style={styles.pillSoft}>{current.company}</span>
                 </div>
 
                 <p style={styles.bio}>{current.bio}</p>
@@ -166,16 +167,24 @@ const styles = {
     display: "grid",
     gap: 14,
     alignContent: "start",
-    background: "#f2f5f3",
+    background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
   },
+
+  topBar: { marginTop: 6 },
+  h2: { margin: 0, fontSize: 22, fontWeight: 900, color: "#023047" },
+  sub: { marginTop: 4, fontSize: 12, opacity: 0.7, color: "#023047" },
+
+  center: { position: "relative", display: "flex", justifyContent: "center" },
 
   card: {
     width: 350,
-    height: 550,
-    borderRadius: 18,
+    height: 560,
+    borderRadius: 22,
     overflow: "hidden",
     position: "relative",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+    boxShadow: "0 16px 40px rgba(0,0,0,0.18)",
+    background: "#000",
   },
 
   photo: {
@@ -184,25 +193,27 @@ const styles = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
+    transform: "scale(1.02)",
   },
 
   gradient: {
     position: "absolute",
     inset: 0,
     background:
-      "linear-gradient(to top, rgba(0,0,0,0.85) 20%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1) 100%)",
+      "linear-gradient(to top, rgba(0,0,0,0.9) 18%, rgba(0,0,0,0.35) 58%, rgba(0,0,0,0.08) 100%)",
   },
 
   match: {
     position: "absolute",
     top: 16,
     right: 16,
-    padding: "6px 10px",
+    padding: "7px 10px",
     borderRadius: 999,
-    background: "white",
+    background: "rgba(255,255,255,0.95)",
     fontSize: 12,
-    fontWeight: 800,
+    fontWeight: 900,
     zIndex: 3,
+    color: "#023047",
   },
 
   info: {
@@ -214,79 +225,116 @@ const styles = {
     zIndex: 3,
   },
 
-  name: { fontSize: 24, fontWeight: 900 },
-  title: { opacity: 0.85, fontWeight: 600 },
+  name: {
+    fontSize: 26,
+    fontWeight: 950,
+    margin: 0,
+    letterSpacing: 0.2,
+  },
 
-  sectionTitle: { fontSize: 12, fontWeight: 700, marginTop: 8 },
+  title: {
+    margin: "6px 0 10px",
+    fontSize: 14,
+    fontWeight: 650,
+    opacity: 0.88,
+  },
 
-  industryBadge: {
-    display: "inline-block",
-    marginTop: 6,
-    padding: "6px 12px",
+  pillsRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 10,
+  },
+
+  pill: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "8px 12px",
     borderRadius: 999,
-    background: "rgba(255,255,255,0.25)",
-    fontWeight: 700,
     fontSize: 13,
+    fontWeight: 900,
+    background: "rgba(255,255,255,0.24)",
+    border: "1px solid rgba(255,255,255,0.22)",
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
   },
 
-  company: {
-    marginTop: 6,
+  pillSoft: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "8px 12px",
+    borderRadius: 999,
     fontSize: 13,
-    opacity: 0.9,
+    fontWeight: 900,
+    background: "rgba(255,255,255,0.14)",
+    border: "1px solid rgba(255,255,255,0.18)",
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
   },
 
-  bio: { marginTop: 8, fontSize: 12 },
+  bio: {
+    margin: 0,
+    fontSize: 13,
+    lineHeight: 1.45,
+    opacity: 0.92,
+  },
 
   actions: {
     display: "flex",
     justifyContent: "center",
     gap: 12,
-    marginTop: 14,
+    marginTop: 10,
   },
 
   nope: {
-    padding: "10px 16px",
+    padding: "12px 18px",
     borderRadius: 999,
-    border: "1px solid #ccc",
+    border: "1px solid #cfe4d7",
     background: "white",
+    fontWeight: 900,
+    color: "#023047",
   },
 
   like: {
-    padding: "10px 16px",
+    padding: "12px 18px",
     borderRadius: 999,
     border: "none",
-    background: "#1d3557",
+    background: "#1f5f3a",
     color: "white",
+    fontWeight: 900,
   },
 
   done: {
     padding: 16,
     borderRadius: 18,
-    background: "white",
+    border: "1px solid #d3e7da",
+    background: "#ffffff",
     textAlign: "center",
   },
 
   badgeRight: {
     position: "absolute",
-    top: 40,
-    left: 40,
+    top: 42,
+    left: 34,
     padding: "8px 12px",
-    background: "green",
+    background: "rgba(31, 95, 58, 0.92)",
     color: "white",
-    fontWeight: 900,
-    borderRadius: 8,
+    fontWeight: 950,
+    borderRadius: 10,
     zIndex: 5,
+    letterSpacing: 0.4,
   },
 
   badgeLeft: {
     position: "absolute",
-    top: 40,
-    right: 40,
+    top: 42,
+    right: 34,
     padding: "8px 12px",
-    background: "red",
+    background: "rgba(190, 50, 50, 0.92)",
     color: "white",
-    fontWeight: 900,
-    borderRadius: 8,
+    fontWeight: 950,
+    borderRadius: 10,
     zIndex: 5,
+    letterSpacing: 0.4,
   },
 };
