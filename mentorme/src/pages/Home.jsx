@@ -5,7 +5,7 @@ export default function Home() {
     <div style={styles.wrap}>
       <img src="/mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h1 style={styles.h1}>MentorMe</h1>
-      <p style={styles.p}>Career help, matched fast.</p>
+      <p style={styles.p}>Guidance for a better tomorrow</p>
 
       <div style={{ display: "grid", gap: 12, width: "100%" }}>
         <Link to="/onboarding" style={styles.btn}>
