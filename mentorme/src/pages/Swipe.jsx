@@ -254,6 +254,10 @@ export default function MentorSwipe() {
           </div>
 
           <div style={styles.actions}>
+            <button style={styles.backBtn} onClick={() => navigate(-1)}>
+            ← Back
+            </button>
+
             <button style={styles.nope} onClick={() => swipe("left")}>
               Pass
             </button>
@@ -276,6 +280,7 @@ const styles = {
     display: "grid",
     gap: 14,
     alignContent: "start",
+    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
   },
@@ -446,4 +451,19 @@ const styles = {
     zIndex: 5,
     letterSpacing: 0.4,
   },
+
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    border: "none",
+    borderTop: "1px solid #d3e7da",
+    color: "#ffffff",
+    background: "#1f5f3a",
+    padding: "8px 14px",
+    borderRadius: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    },
 };
