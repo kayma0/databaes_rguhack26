@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function Home() {
   return (
     <div style={styles.wrap}>
-      <img src="/mentorme.png" style={styles.logo} alt="Mentor Me logo" />
+      <img src="mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h1 style={styles.h1}>MentorMe</h1>
       <p style={styles.p}>Guidance for a better tomorrow</p>
 
