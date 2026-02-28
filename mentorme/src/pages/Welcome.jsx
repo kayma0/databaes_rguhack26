@@ -1,11 +1,17 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function Welcome() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { firstName = "there", lastName = "" } = location.state || {};
 
   return (
     <div style={styles.wrap}>
+
+      <button style={styles.backBtn} onClick={() => navigate(-1)}>
+        ← Back
+      </button>
+
       <h1 style={styles.heading}>
         Hello, {firstName} {lastName}
       </h1>
@@ -46,6 +52,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     gap: 28,
+    position: "relative",
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
@@ -105,4 +112,19 @@ const styles = {
     borderRadius: 12,
     background: "#f5fbf7",
   },
+
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    border: "none",
+    borderTop: "1px solid #d3e7da",
+    color: "#ffffff",
+    background: "#1f5f3a",
+    padding: "8px 14px",
+    borderRadius: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    },
 };

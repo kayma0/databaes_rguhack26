@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function createMessageId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -14,6 +15,8 @@ const channels = [
 ];
 
 export default function Community() {
+  const navigate = useNavigate();
+
   const [channel, setChannel] = useState("mentees");
   const [text, setText] = useState("");
   const [messages, setMessages] = useState([]);
@@ -41,6 +44,10 @@ export default function Community() {
 
   return (
     <div style={styles.wrap}>
+      <button style={styles.backBtn} onClick={() => navigate(-1)}>
+      ← Back
+      </button>
+
       <h2 style={{ margin: "8px 0 0" }}>Community</h2>
 
       <div style={styles.tabs}>
@@ -102,6 +109,7 @@ const styles = {
     maxWidth: 420,
     margin: "0 auto",
     display: "grid",
+    position: "relative",
     gap: 12,
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
@@ -147,4 +155,19 @@ const styles = {
     color: "#023047",
     fontWeight: 800,
   },
+
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    border: "none",
+    borderTop: "1px solid #d3e7da",
+    color: "#ffffff",
+    background: "#1f5f3a",
+    padding: "8px 14px",
+    borderRadius: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    },
 };
