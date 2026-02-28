@@ -26,37 +26,26 @@ export default function Roadmap() {
 
       {/* Bottom Navigation */}
       <div style={styles.bottomNav}>
-        <Link
-          to="/onboarding"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/onboarding") && styles.active),
-          }}
-        >
-          👤
-          <span style={styles.navLabel}>Profile</span>
+        <Link to="/roadmap" style={styles.navItem}>
+          🏠
+          <span style={styles.navLabel}>Home</span>
         </Link>
 
-        <Link
-          to="/swipe"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/swipe") && styles.active),
-          }}
-        >
-          ⬅️ ➡️
+        <Link to="/swipe" style={styles.navItem}>
+          🔍
           <span style={styles.navLabel}>Swipe</span>
         </Link>
 
-        <Link
-          to="/chat"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/chat") && styles.active),
-          }}
-        >
-          💬
+        {/* THIS IS COMMUNITY */}
+        <Link to="/community" style={styles.navItem}>
+          👥
           <span style={styles.navLabel}>Community</span>
+        </Link>
+
+        {/* THIS IS CHAT / REQUESTS */}
+        <Link to="/chat" style={styles.navItem}>
+          💬
+          <span style={styles.navLabel}>Requests</span>
         </Link>
       </div>
     </div>
