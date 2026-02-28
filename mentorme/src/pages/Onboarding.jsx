@@ -11,6 +11,7 @@ export default function Onboarding() {
   const [cvFile, setCvFile] = useState(null);
 
   function handleContinue() {
+
     localStorage.setItem(
       "mentorme_mentee",
       JSON.stringify({
@@ -33,7 +34,6 @@ export default function Onboarding() {
         ← Back
       </button>
 
-      <img src="/mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h2 style={styles.h2}>Your Profile</h2>
 
       <div style={styles.fieldGroup}>
