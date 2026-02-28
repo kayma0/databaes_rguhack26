@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 const mentors = [
   {
@@ -21,8 +21,21 @@ const mentors = [
 
 export default function MentorSwipe() {
   const [index, setIndex] = useState(0);
-
   const current = mentors[index];
+  const [dx, setDx] = useState(0);
+  const [dy, setDy] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const outDirectionRef = useRef(null); // "left", "right" , null
+
+  const startRef = useRef({ x: 0, y: 0 });
+
+  const decisionPreview = useMemo(() => {
+    if (dx > 60) return "right";
+    if (dx < -60) return "left";
+    return null;
+  }, [dx]);
 
   const swipe = (decision) => {
     if (!current) return;
@@ -36,7 +49,61 @@ export default function MentorSwipe() {
     localStorage.setItem("mentor_swipes", JSON.stringify(saved));
 
     setIndex((i) => i + 1);
+    setDx(0);
+    setDy(0);
+    setIsDragging(false);
+    setIsAnimatingOut(false);
+    outDirectionRef.current = null;
   };
+
+  const onPointerDown = (e) => {
+    if (!current || isAnimatingOut) return;
+
+    setIsDragging(true);
+    startRef.current = { x: e.clientX, y: e.clientY };
+
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e) => {
+    if (!isDragging || !current || isAnimatingOut) return;
+
+    const nx = e.clientX - startRef.current.x;
+    const ny = e.clientY - startRef.current.y;
+
+    setDx(nx);
+    setDy(ny);
+  };
+
+  const onPointerUp = () => {
+    if (!isDragging || !current || isAnimatingOut) return;
+
+    setIsDragging(false);
+
+    const threshold = 120;
+    if (dx > threshold) {
+      outDirectionRef.current = "right";
+      setIsAnimatingOut(true);
+      setDx(500);
+      setDy(dy);
+      setTimeout(() => swipe("right"), 180);
+      return;
+    }
+
+    if (dx < -threshold) {
+      outDirectionRef.current = "left";
+      setIsAnimatingOut(true);
+      setDx(-500);
+      setDy(dy);
+      setTimeout(() => swipe("left"), 180);
+      return;
+    }
+
+    setDx(0);
+    setDy(0);
+  };
+
+  const rotation = dx / 18;
 
   return (
     <div style={styles.wrap}>
@@ -51,17 +118,41 @@ export default function MentorSwipe() {
         </div>
       ) : (
         <>
-          <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            {/* Swipe hint badges */}
+            {decisionPreview === "right" && (
+              <div style={styles.badgeRight}>REQUEST</div>
+            )}
+            {decisionPreview === "left" && (
+              <div style={styles.badgeLeft}>PASS</div>
+            )}
+
             <div
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
               style={{
                 ...styles.card,
                 background: "linear-gradient(180deg, #9ac8a8 0%, #5c916b 100%)",
+                transform: `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`,
+                transition: isDragging ? "none" : "transform 180ms ease",
+                touchAction: "none",
+                cursor: isDragging ? "grabbing" : "grab",
               }}
             >
               <div style={styles.match}>{current.match}% match</div>
+
               <div style={styles.info}>
                 <h2 style={styles.name}>{current.name}</h2>
                 <p style={styles.title}>{current.title}</p>
+
                 <div style={{ marginTop: 8 }}>
                   <div style={styles.sectionTitle}>Helps with</div>
                   <div style={styles.tags}>
@@ -72,14 +163,20 @@ export default function MentorSwipe() {
                     ))}
                   </div>
                 </div>
+
                 <p style={styles.bio}>{current.bio}</p>
               </div>
             </div>
           </div>
 
+          {/* keep buttons as backup */}
           <div style={styles.actions}>
-            <button style={styles.nope} onClick={() => swipe("left")}>✕</button>
-            <button style={styles.like} onClick={() => swipe("right")}>❤</button>
+            <button style={styles.nope} onClick={() => swipe("left")}>
+              ✕
+            </button>
+            <button style={styles.like} onClick={() => swipe("right")}>
+              ❤
+            </button>
           </div>
 
           <p style={styles.small}>Swipe right to request. Left to skip.</p>
@@ -111,6 +208,7 @@ const styles = {
     justifyContent: "flex-end",
     padding: 16,
     color: "#fff",
+    position: "relative",
   },
   info: {
     background: "rgba(0,0,0,0.4)",
@@ -131,7 +229,12 @@ const styles = {
   },
   name: { fontSize: 22, fontWeight: 900 },
   title: { opacity: 0.85, fontWeight: 600 },
-  sectionTitle: { fontWeight: 700, fontSize: 12, opacity: 0.8, marginBottom: 4 },
+  sectionTitle: {
+    fontWeight: 700,
+    fontSize: 12,
+    opacity: 0.8,
+    marginBottom: 4,
+  },
   tags: { display: "flex", flexWrap: "wrap", gap: 6 },
   tag: {
     fontSize: 11,
@@ -142,7 +245,13 @@ const styles = {
     color: "#023047",
   },
   bio: { marginTop: 8, fontSize: 12, lineHeight: 1.35 },
-  actions: { display: "flex", justifyContent: "center", gap: 16, marginTop: 12 },
+
+  actions: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 16,
+    marginTop: 12,
+  },
   nope: {
     width: 60,
     height: 60,
@@ -161,6 +270,7 @@ const styles = {
     background: "#94c3a3",
     color: "#023047",
   },
+
   small: { textAlign: "center", fontSize: 12, opacity: 0.75 },
   done: {
     padding: 16,
@@ -168,5 +278,30 @@ const styles = {
     border: "1px solid #d3e7da",
     background: "#ffffff",
     textAlign: "center",
+  },
+
+  badgeRight: {
+    position: "absolute",
+    zIndex: 5,
+    top: 28,
+    left: 28,
+    padding: "8px 10px",
+    borderRadius: 12,
+    background: "rgba(0,0,0,0.75)",
+    color: "white",
+    fontWeight: 900,
+    letterSpacing: 0.5,
+  },
+  badgeLeft: {
+    position: "absolute",
+    zIndex: 5,
+    top: 28,
+    right: 28,
+    padding: "8px 10px",
+    borderRadius: 12,
+    background: "rgba(0,0,0,0.75)",
+    color: "white",
+    fontWeight: 900,
+    letterSpacing: 0.5,
   },
 };
