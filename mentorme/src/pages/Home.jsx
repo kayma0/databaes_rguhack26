@@ -10,7 +10,7 @@ export default function Home() {
       </div>
       <p style={styles.p}>Guidance for a better tomorrow</p>
       <Link to="/onboarding" style={styles.btnPrimary}>
-        Upload CV to begin
+        Click to begin
       </Link>
     </div>
   );
