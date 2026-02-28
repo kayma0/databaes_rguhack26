@@ -26,6 +26,11 @@ export default function Roadmap() {
       <div style={styles.content}>
         <h1 style={styles.hello}>Hello {firstName}</h1>
         <h2 style={styles.title}>Here is your roadmap</h2>
+        <img
+          src="/roadmap3.png"
+          alt="Roadmap"
+          style={styles.roadmapImage}
+        />
       </div>
 
       <div style={styles.bottomNav}>
@@ -97,6 +102,15 @@ const styles = {
     marginBottom: 0,
     fontSize: 24,
     color: "#244e62",
+  },
+
+  roadmapImage: {
+    width: "100%", 
+    maxWidth: "650px", 
+    height: "500px", 
+    marginTop: 20, 
+    borderRadius: 12, 
+    // boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", 
   },
 
   bottomNav: {
