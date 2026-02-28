@@ -5,6 +5,7 @@ import Onboarding from "./pages/Onboarding.jsx";
 import Swipe from "./pages/Swipe.jsx";
 import Chat from "./pages/Chat.jsx";
 import Community from "./pages/Community.jsx";
+import Welcome from "./pages/Welcome.jsx";
 
 export default function App() {
   return (
