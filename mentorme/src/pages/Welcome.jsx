@@ -136,7 +136,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     gap: 4,
-    fontSize: 10,
+    fontSize: 15,
     color: "#7a9e8c",
     fontWeight: 600,
   },
