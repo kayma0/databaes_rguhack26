@@ -1,128 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const mentors = [
-  {
-    id: 1,
-    name: "Sarah",
-    title: "Software Engineer",
-    industry: "Big Tech",
-    company: "Amazon",
-    match: 92,
-    bio: "I help students break into large tech companies and scale their careers.",
-    img: "https://img.freepik.com/premium-photo/happy-beautiful-portrait-woman-wall-work-with-confidence-happiness-pride-smile-content-executive-employee-working-corporate-professional-business-management_590464-161571.jpg?w=360",
-  },
-  {
-    id: 2,
-    name: "Mariah",
-    title: "Data Scientist",
-    industry: "Finance",
-    company: "JP Morgan",
-    match: 87,
-    bio: "I mentor students who want to enter quantitative finance roles.",
-    img: "https://images.squarespace-cdn.com/content/v1/6253c0a34c71c941801fde7c/a0a371e9-1517-44d6-964d-1b22fadb9a47/2024-street-portraits-106.jpg?format=original",
-  },
-  {
-    id: 4,
-    name: "Priya",
-    title: "Product Manager",
-    industry: "Big Tech",
-    company: "Google",
-    match: 95,
-    bio: "I help students transition into product roles and prepare for PM interviews.",
-    img: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=1200&q=80",
-  },
-  {
-    id: 5,
-    name: "James",
-    title: "Management Consultant",
-    industry: "Consulting",
-    company: "McKinsey & Company",
-    match: 91,
-    bio: "I mentor students aiming for consulting careers and case interview prep.",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=80",
-  },
-  {
-    id: 6,
-    name: "Aisha",
-    title: "Investment Banking Analyst",
-    industry: "Finance",
-    company: "Goldman Sachs",
-    match: 93,
-    bio: "I guide students through investment banking applications and technical prep.",
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=80",
-  },
-  {
-    id: 7,
-    name: "Leo",
-    title: "Software Engineer",
-    industry: "Startup",
-    company: "Stripe",
-    match: 89,
-    bio: "I help students break into high-growth startups and scale engineering skills.",
-    img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1200&q=80",
-  },
-  {
-    id: 8,
-    name: "Maya",
-    title: "UX Designer",
-    industry: "Big Tech",
-    company: "Microsoft",
-    match: 90,
-    bio: "I mentor aspiring designers in building portfolios and landing UX roles.",
-    img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=80",
-  },
-  {
-    id: 9,
-    name: "Omar",
-    title: "Quantitative Analyst",
-    industry: "Finance",
-    company: "BlackRock",
-    match: 97,
-    bio: "I support students targeting quant and asset management careers.",
-    img: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=1200&q=80",
-  },
-  {
-    id: 10,
-    name: "Aaliyah",
-    title: "Cybersecurity Engineer",
-    industry: "Technology",
-    company: "IBM",
-    match: 88,
-    bio: "I help students prepare for cybersecurity certifications and roles.",
-    img: "https://nonprofitquarterly.org/wp-content/uploads/2024/04/3.jpeg",
-  },
-  {
-    id: 11,
-    name: "Daniel",
-    title: "AI Research Engineer",
-    industry: "Artificial Intelligence",
-    company: "OpenAI",
-    match: 98,
-    bio: "I mentor students interested in machine learning research and AI careers.",
-    img: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=1200&q=80",
-  },
-  {
-    id: 12,
-    name: "Chloe",
-    title: "Healthcare Consultant",
-    industry: "Healthcare",
-    company: "Deloitte",
-    match: 86,
-    bio: "I guide students exploring healthcare consulting and policy careers.",
-    img: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1200&q=80",
-  },
-  {
-    id: 13,
-    name: "Marcus",
-    title: "Cloud Solutions Architect",
-    industry: "Technology",
-    company: "AWS",
-    match: 94,
-    bio: "I help students build cloud skills and land infrastructure roles.",
-    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1200&q=80",
-  },
-];
+import { mentors } from "../data/mentors.js";
 
 export default function MentorSwipe() {
   const navigate = useNavigate();
@@ -254,6 +132,10 @@ export default function MentorSwipe() {
           </div>
 
           <div style={styles.actions}>
+            <button style={styles.backBtn} onClick={() => navigate(-1)}>
+            ← Back
+            </button>
+
             <button style={styles.nope} onClick={() => swipe("left")}>
               Pass
             </button>
@@ -276,6 +158,7 @@ const styles = {
     display: "grid",
     gap: 14,
     alignContent: "start",
+    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
   },
@@ -446,4 +329,19 @@ const styles = {
     zIndex: 5,
     letterSpacing: 0.4,
   },
+
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    border: "none",
+    borderTop: "1px solid #d3e7da",
+    color: "#ffffff",
+    background: "#1f5f3a",
+    padding: "8px 14px",
+    borderRadius: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    },
 };
