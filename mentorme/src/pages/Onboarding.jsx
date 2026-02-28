@@ -29,6 +29,10 @@ export default function Onboarding() {
 
   return (
     <div style={styles.wrap}>
+      <button style={styles.backBtn} onClick={() => nav(-1)}>
+        ← Back
+      </button>
+
       <img src="/mentorme.png" style={styles.logo} alt="Mentor Me logo" />
       <h2 style={styles.h2}>Your Profile</h2>
 
@@ -132,6 +136,7 @@ const styles = {
     margin: "0 auto",
     display: "grid",
     gap: 12,
+    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
   },
@@ -177,4 +182,19 @@ const styles = {
     color: "#023047",
     fontWeight: 700,
   },
+
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    left: 7,
+    border: "none",
+    borderTop: "1px solid #d3e7da",
+    color: "#ffffff",
+    background: "#1f5f3a",
+    padding: "8px 14px",
+    borderRadius: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    },
 };
