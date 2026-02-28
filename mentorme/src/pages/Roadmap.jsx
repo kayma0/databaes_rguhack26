@@ -27,7 +27,7 @@ export default function Roadmap() {
         <h1 style={styles.hello}>Hello {firstName}</h1>
         <h2 style={styles.title}>Here is your roadmap</h2>
         <img
-          src="/roadmap3.png"
+          src="/roadmap4.png"
           alt="Roadmap"
           style={styles.roadmapImage}
         />
@@ -106,8 +106,8 @@ const styles = {
 
   roadmapImage: {
     width: "100%", 
-    maxWidth: "650px", 
-    height: "500px", 
+    maxWidth: "100%", 
+    height: "auto", 
     marginTop: 20, 
     borderRadius: 12, 
     // boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", 
