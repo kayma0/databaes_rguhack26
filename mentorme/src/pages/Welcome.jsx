@@ -18,7 +18,7 @@ export default function Welcome() {
 
       <div style={styles.bottomNav}>
         <Link to = "/Onboarding" style={styles.navButton}>
-          Onboarding
+          Account
         </Link>
         <Link to="/Swipe" style={styles.navButton}>
           Swipe
