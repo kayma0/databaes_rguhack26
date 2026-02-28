@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
+function createMessageId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
 const channels = [
   { id: "mentees", label: "Mentees Lounge" },
   { id: "mentors", label: "Mentor Circle" },
@@ -20,7 +28,7 @@ export default function Community() {
     if (!text.trim()) return;
     const user = JSON.parse(localStorage.getItem("mentorme_mentee") || "{}");
     const msg = {
-      id: crypto.randomUUID(),
+      id: createMessageId(),
       name: user.name || "Guest",
       text: text.trim(),
       at: new Date().toISOString(),
