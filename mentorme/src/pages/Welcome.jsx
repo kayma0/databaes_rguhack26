@@ -61,14 +61,11 @@ export default function Welcome() {
         </Link>
 
         <Link
-          to="/goals"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/goals") && styles.active),
-          }}
+          to="/chat"
+          style={{ ...styles.navItem, ...(isActive("/chat") && styles.active) }}
         >
-          🎯
-          <span style={styles.navLabel}>Goals</span>
+          💬
+          <span style={styles.navLabel}>Requests</span>
         </Link>
       </div>
     </div>
