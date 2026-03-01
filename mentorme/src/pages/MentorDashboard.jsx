@@ -352,11 +352,14 @@ export default function MentorDashboard() {
         </Link>
 
         <Link
-          to="/chat"
-          style={{ ...styles.navItem, ...(isActive("/chat") && styles.active) }}
+          to="/mentor-goals"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/mentor-goals") && styles.active),
+          }}
         >
-          💬
-          <span style={styles.navLabel}>Requests</span>
+          🎯
+          <span style={styles.navLabel}>Goals</span>
         </Link>
       </div>
     </div>
