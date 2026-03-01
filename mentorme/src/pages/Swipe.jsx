@@ -44,9 +44,10 @@ export default function Swipe() {
     if (!current) return;
 
     const decision = direction === "right" ? "request" : "pass";
+    setShowPopup(true);
     recordSwipe(decision);
 
-    // ✅ Create request only when swiping RIGHT
+    // Create request only when swiping RIGHT
     if (direction === "right") {
       const requests = JSON.parse(
         localStorage.getItem("mentor_requests") || "[]",
@@ -81,8 +82,16 @@ export default function Swipe() {
         at: new Date().toISOString(),
       });
 
+      
       localStorage.setItem("mentor_requests", JSON.stringify(requests));
     }
+
+      // Show popup
+      setRequestedMentor(current.name);
+
+      setTimeout(() => {
+      setShowPopup(false);
+      }, 2000);
 
     const nextIndex = index + 1;
 
@@ -131,6 +140,11 @@ export default function Swipe() {
 
   return (
     <div style={styles.wrap}>
+      {showPopup && (
+        <div style={styles.popup}>
+          Request sent to {requestedMentor} 
+        </div>
+      )}
       <div style={styles.topBar}>
         <h2 style={styles.h2}>Mentor Matches</h2>
         <div style={styles.sub}>Swipe right to request</div>
@@ -381,4 +395,18 @@ const styles = {
   navLabel: { fontSize: 11 },
 
   active: { color: "#1f5f3a", fontWeight: 900 },
+
+  popup: {
+    position: "fixed",
+    bottom: 100,
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "#1f5f3a",
+    color: "white",
+    padding: "12px 20px",
+    borderRadius: 12,
+    fontWeight: 700,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    zIndex: 999,
+},
 };
