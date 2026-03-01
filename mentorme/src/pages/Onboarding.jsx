@@ -393,7 +393,7 @@ export default function Onboarding() {
   const canContinueCommon = firstName && lastName && email;
 
   const canContinueMentor =
-    canContinueCommon && role && industry && company && bio;
+    canContinueCommon && role && industry && company && bio && mentorPhotoData;
 
   const canContinueMentee = canContinueCommon;
 
