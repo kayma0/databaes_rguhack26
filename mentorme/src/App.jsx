@@ -13,6 +13,7 @@ import Goals from "./pages/Goals.jsx";
 import Community from "./pages/Community.jsx";
 
 import MentorDashboard from "./pages/MentorDashboard.jsx";
+import MentorGoals from "./pages/MentorGoals.jsx";
 
 import RequireRole from "./components/RequireRole.jsx";
 
@@ -82,6 +83,14 @@ export default function App() {
         element={
           <RequireRole allow={["mentor"]}>
             <MentorDashboard />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/mentor-goals"
+        element={
+          <RequireRole allow={["mentor"]}>
+            <MentorGoals />
           </RequireRole>
         }
       />

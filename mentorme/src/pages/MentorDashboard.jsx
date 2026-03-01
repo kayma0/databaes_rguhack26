@@ -176,7 +176,11 @@ export default function MentorDashboard() {
               />
             ) : (
               <div style={styles.avatar}>
-                {(mentor.firstName?.[0] || mentor.name?.[0] || "M").toUpperCase()}
+                {(
+                  mentor.firstName?.[0] ||
+                  mentor.name?.[0] ||
+                  "M"
+                ).toUpperCase()}
               </div>
             )}
             <div>
@@ -296,7 +300,7 @@ export default function MentorDashboard() {
         </div>
 
         {accepted.length === 0 ? (
-          <div style={{ ...styles.miniCard, marginTop: 18 }}>
+          <div style={{ ...styles.miniCard, marginTop: 22 }}>
             No accepted mentees yet.
           </div>
         ) : (
@@ -339,6 +343,17 @@ export default function MentorDashboard() {
         >
           👥
           <span style={styles.navLabel}>Community</span>
+        </Link>
+
+        <Link
+          to="/mentor-goals"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/mentor-goals") && styles.active),
+          }}
+        >
+          🎯
+          <span style={styles.navLabel}>Goals</span>
         </Link>
       </div>
     </div>
@@ -391,7 +406,7 @@ const styles = {
     borderRadius: 999,
     objectFit: "cover",
     border: "1px solid #cfe3d7",
-    boxShadow: "0 4px 10px rgba(2, 48, 71, 0.12)",
+    background: "#f3f7f5",
   },
 
   profileName: { fontWeight: 950, fontSize: 16 },

@@ -67,11 +67,11 @@
   border: 1px solid #d3e7da;
   border-radius: 14px;
   padding: 1.2rem;
-  box-shadow: 0 8px 24px rgba(2, 48, 71, 0.08);
+  box-shadow: 0 8px 24px rsgba(2, 48, 71, 0.08);
 }
 
 .feature-card h2 {
-  margin: 0;
+  margin: 0; 
   font-size: 1.1rem;
 }
 
