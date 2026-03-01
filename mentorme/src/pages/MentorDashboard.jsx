@@ -168,9 +168,27 @@ export default function MentorDashboard() {
 
         <div style={styles.profileCard}>
           <div style={styles.profileTop}>
+<<<<<<< Updated upstream
             <div style={styles.avatar}>
               {(mentor.firstName?.[0] || mentor.name?.[0] || "M").toUpperCase()}
             </div>
+=======
+            {mentor.img ? (
+              <img
+                src={mentor.img}
+                alt={mentor.name || "Mentor profile"}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <div style={styles.avatar}>
+                {(
+                  mentor.firstName?.[0] ||
+                  mentor.name?.[0] ||
+                  "M"
+                ).toUpperCase()}
+              </div>
+            )}
+>>>>>>> Stashed changes
             <div>
               <div style={styles.profileName}>
                 {mentor.name || "Your profile"}
@@ -288,7 +306,7 @@ export default function MentorDashboard() {
         </div>
 
         {accepted.length === 0 ? (
-          <div style={{ ...styles.miniCard, marginTop: 18 }}>
+          <div style={{ ...styles.miniCard, marginTop: 22 }}>
             No accepted mentees yet.
           </div>
         ) : (
