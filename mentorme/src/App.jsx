@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home.jsx";
@@ -17,6 +18,11 @@ import MentorDashboard from "./pages/MentorDashboard.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 
 export default function App() {
+  // ✅ Fresh demo session every time you run / refresh
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
+
   return (
     <Routes>
       {/* Public */}
