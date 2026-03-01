@@ -1,13 +1,19 @@
 import { useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { mentors } from "../data/mentors.js";
+import { mentors as fallbackMentors } from "../data/mentors.js";
 
 export default function Swipe() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // ✅ Use real mentors first (from mentor onboarding)
+  const storedMentors = JSON.parse(
+    localStorage.getItem("mentorme_mentors") || "[]",
+  );
+  const allMentors = storedMentors.length ? storedMentors : fallbackMentors;
+
   const [index, setIndex] = useState(0);
-  const current = mentors[index];
+  const current = allMentors[index];
 
   const [dx, setDx] = useState(0);
   const [dy, setDy] = useState(0);
@@ -24,6 +30,7 @@ export default function Swipe() {
   }, [dx]);
 
   const recordSwipe = (decision) => {
+    if (!current) return;
     const saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
     saved.push({
       mentorId: current.id,
@@ -34,12 +41,52 @@ export default function Swipe() {
   };
 
   const swipe = (direction) => {
+    if (!current) return;
+
     const decision = direction === "right" ? "request" : "pass";
     recordSwipe(decision);
 
+    // ✅ Create request only when swiping RIGHT
+    if (direction === "right") {
+      const requests = JSON.parse(
+        localStorage.getItem("mentor_requests") || "[]",
+      );
+
+      const mentee = JSON.parse(
+        localStorage.getItem("mentorme_mentee") || "{}",
+      );
+
+      requests.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        mentorId: current.id,
+        mentorName: current.name,
+        mentorCompany: current.company,
+
+        // ✅ FULL mentee details saved inside request
+        mentee: {
+          name:
+            mentee.name ||
+            `${mentee.firstName || ""} ${mentee.lastName || ""}`.trim() ||
+            "Unknown Mentee",
+          firstName: mentee.firstName || "",
+          lastName: mentee.lastName || "",
+          email: mentee.email || "",
+          targetRole: mentee.role || "",
+          interests: mentee.interests || "",
+          lookingFor: Array.isArray(mentee.lookingFor) ? mentee.lookingFor : [],
+          cvName: mentee.cvName || null,
+        },
+
+        status: "pending", // pending | accepted | declined
+        at: new Date().toISOString(),
+      });
+
+      localStorage.setItem("mentor_requests", JSON.stringify(requests));
+    }
+
     const nextIndex = index + 1;
 
-    if (nextIndex >= mentors.length) {
+    if (nextIndex >= allMentors.length) {
       navigate("/roadmap");
       return;
     }
@@ -94,7 +141,7 @@ export default function Swipe() {
           <div style={styles.done}>
             <h3 style={{ margin: 0 }}>No more mentors</h3>
             <p style={{ margin: "8px 0 0", opacity: 0.75 }}>
-              You can revisit later or check community.
+              Try again later or check community.
             </p>
           </div>
         ) : (
@@ -183,7 +230,7 @@ const styles = {
   wrap: {
     minHeight: "100vh",
     padding: 18,
-    paddingBottom: 90, // important for fixed navbar
+    paddingBottom: 90,
     maxWidth: 420,
     margin: "0 auto",
     display: "grid",
@@ -301,7 +348,6 @@ const styles = {
     zIndex: 5,
   },
 
-  // Roadmap-style navbar
   bottomNav: {
     width: "100%",
     maxWidth: 420,
@@ -329,12 +375,7 @@ const styles = {
     fontWeight: 600,
   },
 
-  navLabel: {
-    fontSize: 11,
-  },
+  navLabel: { fontSize: 11 },
 
-  active: {
-    color: "#1f5f3a",
-    fontWeight: 900,
-  },
+  active: { color: "#1f5f3a", fontWeight: 900 },
 };

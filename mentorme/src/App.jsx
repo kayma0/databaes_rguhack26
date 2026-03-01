@@ -11,6 +11,8 @@ import Chat from "./pages/Chat.jsx";
 import Community from "./pages/Community.jsx";
 import Notification from "./pages/Notification.jsx";
 
+import MentorDashboard from "./pages/MentorDashboard.jsx";
+
 export default function App() {
   return (
     <Routes>
@@ -29,6 +31,8 @@ export default function App() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
+
+      <Route path="/mentor" element={<MentorDashboard />} />
     </Routes>
   );
 }
