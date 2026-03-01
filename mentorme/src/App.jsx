@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home.jsx";
@@ -14,15 +13,11 @@ import Goals from "./pages/Goals.jsx";
 import Community from "./pages/Community.jsx";
 
 import MentorDashboard from "./pages/MentorDashboard.jsx";
+import MentorGoals from "./pages/MentorGoals.jsx";
 
 import RequireRole from "./components/RequireRole.jsx";
 
 export default function App() {
-  // ✅ Fresh demo session every time you run / refresh
-  useEffect(() => {
-    localStorage.clear();
-  }, []);
-
   return (
     <Routes>
       {/* Public */}
@@ -88,6 +83,14 @@ export default function App() {
         element={
           <RequireRole allow={["mentor"]}>
             <MentorDashboard />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/mentor-goals"
+        element={
+          <RequireRole allow={["mentor"]}>
+            <MentorGoals />
           </RequireRole>
         }
       />
