@@ -1,53 +1,139 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function MentorDashboard() {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
 
-  const mentor = JSON.parse(localStorage.getItem("mentorme_mentor") || "{}");
+  const [requests, setRequests] = useState([]);
+  const [tick, setTick] = useState(0);
 
-  const [refresh, setRefresh] = useState(0);
-
-  const allRequests = useMemo(() => {
+  // ✅ Load mentor profile (and re-load when we patch it)
+  const mentor = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("mentor_requests") || "[]");
+      return JSON.parse(localStorage.getItem("mentorme_mentor") || "{}");
     } catch {
-      return [];
+      return {};
     }
-  }, [refresh]);
+  }, [tick]);
 
-  // Only requests for THIS mentor (by id)
-  const myRequests = allRequests.filter((r) => r.mentorId === mentor.id);
+  // ✅ Resolve mentor ID even for older mentors that don't have id saved
+  const resolvedMentorId = useMemo(() => {
+    if (mentor?.id) return mentor.id;
+
+    const pool = (() => {
+      try {
+        const arr = JSON.parse(
+          localStorage.getItem("mentorme_mentors") || "[]",
+        );
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    })();
+
+    const fullName =
+      mentor?.name ||
+      `${mentor?.firstName || ""} ${mentor?.lastName || ""}`.trim();
+
+    const match =
+      pool.find((m) => mentor?.email && m?.email === mentor.email) ||
+      pool.find((m) => fullName && m?.name === fullName) ||
+      pool.find(
+        (m) =>
+          mentor?.firstName && (m?.name || "").startsWith(mentor.firstName),
+      );
+
+    if (match?.id) {
+      const patched = {
+        ...mentor,
+        id: match.id,
+        name: mentor.name || fullName,
+      };
+      localStorage.setItem("mentorme_mentor", JSON.stringify(patched));
+      // trigger re-read
+      setTimeout(() => setTick((x) => x + 1), 0);
+      return match.id;
+    }
+
+    return null;
+  }, [mentor]);
+
+  // ✅ Load requests repeatedly so UI updates even in the same tab
+  useEffect(() => {
+    const load = () => {
+      try {
+        const all = JSON.parse(localStorage.getItem("mentor_requests") || "[]");
+        setRequests(Array.isArray(all) ? all : []);
+      } catch {
+        setRequests([]);
+      }
+    };
+
+    load();
+
+    // other-tab updates
+    const onStorage = (e) => {
+      if (e.key === "mentor_requests") load();
+    };
+    window.addEventListener("storage", onStorage);
+
+    // same-tab updates (simple demo-friendly polling)
+    const interval = setInterval(load, 700);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // ✅ Requests for this mentor
+  const myRequests = useMemo(() => {
+    const mentorName =
+      mentor?.name ||
+      `${mentor?.firstName || ""} ${mentor?.lastName || ""}`.trim();
+
+    return requests.filter((r) => {
+      // prefer id matching
+      if (resolvedMentorId && r?.mentorId === resolvedMentorId) return true;
+
+      // fallback for older saved requests
+      if (mentorName && r?.mentorName === mentorName) return true;
+
+      return false;
+    });
+  }, [requests, resolvedMentorId, mentor]);
 
   const pending = myRequests.filter((r) => r.status === "pending");
   const accepted = myRequests.filter((r) => r.status === "accepted");
 
   const updateRequestStatus = (requestId, status) => {
-    const requests = JSON.parse(
-      localStorage.getItem("mentor_requests") || "[]",
-    );
-    const idx = requests.findIndex((r) => r.id === requestId);
+    const all = JSON.parse(localStorage.getItem("mentor_requests") || "[]");
+    const idx = all.findIndex((r) => r.id === requestId);
     if (idx === -1) return;
 
-    requests[idx] = {
-      ...requests[idx],
+    const updatedReq = {
+      ...all[idx],
       status,
       decidedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem("mentor_requests", JSON.stringify(requests));
+    all[idx] = updatedReq;
+    localStorage.setItem("mentor_requests", JSON.stringify(all));
 
-    // If accepted, create a notification for the mentee
+    // ✅ If accepted, create mentee notification
     if (status === "accepted") {
       const notif = {
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         type: "mentor_accepted",
-        mentorName: mentor.name || "A mentor",
-        mentorCompany: mentor.company || "",
-        mentorIndustry: mentor.industry || "",
-        menteeEmail: requests[idx]?.mentee?.email || "",
-        menteeName: requests[idx]?.mentee?.name || "",
+        mentorName:
+          mentor?.name ||
+          `${mentor?.firstName || ""} ${mentor?.lastName || ""}`.trim() ||
+          "A mentor",
+        mentorCompany: mentor?.company || "",
+        mentorIndustry: mentor?.industry || "",
+        menteeEmail: updatedReq?.mentee?.email || "",
+        menteeName: updatedReq?.mentee?.name || "",
         createdAt: new Date().toISOString(),
         read: false,
       };
@@ -62,16 +148,49 @@ export default function MentorDashboard() {
       );
     }
 
-    setRefresh((x) => x + 1);
+    // force UI refresh instantly
+    setRequests([...all]);
   };
 
   return (
     <div style={styles.wrap}>
       <div style={styles.header}>
-        <h1 style={styles.h1}>Welcome {mentor.firstName || "Mentor"}</h1>
-        <p style={styles.sub}>
-          Review mentee requests and accept when you’re ready.
-        </p>
+        <div>
+          <h1 style={styles.h1}>Mentor Dashboard</h1>
+          <p style={styles.sub}>
+            Welcome{" "}
+            <span style={{ fontWeight: 950, color: "#1f5f3a" }}>
+              {mentor.firstName || "Mentor"}
+            </span>
+            . Review requests and accept mentees.
+          </p>
+        </div>
+
+        <div style={styles.profileCard}>
+          <div style={styles.profileTop}>
+            <div style={styles.avatar}>
+              {(mentor.firstName?.[0] || mentor.name?.[0] || "M").toUpperCase()}
+            </div>
+            <div>
+              <div style={styles.profileName}>
+                {mentor.name || "Your profile"}
+              </div>
+              <div style={styles.profileMeta}>
+                {mentor.title || "Mentor"}{" "}
+                {mentor.company ? `• ${mentor.company}` : ""}
+              </div>
+            </div>
+          </div>
+          <div style={styles.profilePills}>
+            {mentor.industry && (
+              <span style={styles.pill}>{mentor.industry}</span>
+            )}
+            {mentor.company && (
+              <span style={styles.pillSoft}>{mentor.company}</span>
+            )}
+          </div>
+          {mentor.bio && <div style={styles.profileBio}>{mentor.bio}</div>}
+        </div>
       </div>
 
       {/* Pending */}
@@ -82,9 +201,9 @@ export default function MentorDashboard() {
 
       {pending.length === 0 ? (
         <div style={styles.emptyCard}>
-          <div style={{ fontWeight: 900 }}>No pending requests</div>
+          <div style={{ fontWeight: 950 }}>No pending requests yet</div>
           <div style={{ opacity: 0.75, marginTop: 6 }}>
-            When students request you, they’ll appear here.
+            When students swipe right on you, they’ll appear here automatically.
           </div>
         </div>
       ) : (
@@ -92,7 +211,7 @@ export default function MentorDashboard() {
           {pending.map((r) => (
             <div key={r.id} style={styles.requestCard}>
               <div style={styles.requestTop}>
-                <div style={styles.avatar}>
+                <div style={styles.menteeAvatar}>
                   {(
                     r.mentee?.firstName?.[0] ||
                     r.mentee?.name?.[0] ||
@@ -130,14 +249,14 @@ export default function MentorDashboard() {
 
               {r.mentee?.interests && (
                 <p style={styles.note}>
-                  <span style={{ fontWeight: 900 }}>Interests:</span>{" "}
+                  <span style={{ fontWeight: 950 }}>Interests:</span>{" "}
                   {r.mentee.interests}
                 </p>
               )}
 
               {r.mentee?.cvName && (
                 <div style={styles.cvRow}>
-                  <span style={{ fontWeight: 900 }}>CV:</span>{" "}
+                  <span style={{ fontWeight: 950 }}>CV:</span>{" "}
                   <span style={{ opacity: 0.85 }}>{r.mentee.cvName}</span>
                 </div>
               )}
@@ -162,21 +281,21 @@ export default function MentorDashboard() {
       )}
 
       {/* Accepted */}
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 40 }}>
         <div style={styles.sectionTitleRow}>
           <h2 style={styles.h2}>Accepted</h2>
           <span style={styles.countPill}>{accepted.length}</span>
         </div>
 
         {accepted.length === 0 ? (
-          <div style={{ ...styles.miniCard, marginTop: 30 }}>
+          <div style={{ ...styles.miniCard, marginTop: 18 }}>
             No accepted mentees yet.
           </div>
         ) : (
           <div style={styles.list}>
             {accepted.map((r) => (
               <div key={r.id} style={styles.miniCard}>
-                <div style={{ fontWeight: 900 }}>
+                <div style={{ fontWeight: 950 }}>
                   {r.mentee?.name || "Student"}
                 </div>
                 <div style={{ opacity: 0.75, marginTop: 4 }}>
@@ -240,9 +359,38 @@ const styles = {
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
   },
 
-  header: { marginTop: 8 },
-  h1: { margin: 0, fontSize: 34, fontWeight: 950, letterSpacing: -0.2 },
-  sub: { margin: "6px 0 0", opacity: 0.75, fontWeight: 600 },
+  header: { marginTop: 8, display: "grid", gap: 12 },
+  h1: { margin: 0, fontSize: 30, fontWeight: 950, letterSpacing: -0.2 },
+  sub: { margin: "6px 0 0", opacity: 0.78, fontWeight: 650 },
+
+  profileCard: {
+    padding: 14,
+    borderRadius: 18,
+    border: "1px solid #d3e7da",
+    background: "#ffffff",
+    boxShadow: "0 10px 22px rgba(2, 48, 71, 0.06)",
+  },
+
+  profileTop: { display: "flex", gap: 10, alignItems: "center" },
+
+  avatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 999,
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 950,
+    background: "#e8f3ec",
+    color: "#1f5f3a",
+    border: "1px solid #cfe3d7",
+  },
+
+  profileName: { fontWeight: 950, fontSize: 16 },
+  profileMeta: { fontSize: 12, opacity: 0.75, marginTop: 2 },
+
+  profilePills: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 },
+
+  profileBio: { marginTop: 10, fontSize: 13, lineHeight: 1.45, opacity: 0.9 },
 
   sectionTitleRow: {
     display: "flex",
@@ -251,6 +399,7 @@ const styles = {
     marginTop: 10,
   },
   h2: { margin: 0, fontSize: 18, fontWeight: 950 },
+
   countPill: {
     fontSize: 12,
     fontWeight: 950,
@@ -273,20 +422,20 @@ const styles = {
 
   requestTop: { display: "flex", gap: 12, alignItems: "center" },
 
-  avatar: {
+  menteeAvatar: {
     width: 44,
     height: 44,
     borderRadius: 999,
     display: "grid",
     placeItems: "center",
     fontWeight: 950,
-    background: "#e8f3ec",
-    color: "#1f5f3a",
-    border: "1px solid #cfe3d7",
+    background: "#f3f7f5",
+    color: "#244e62",
+    border: "1px solid #dfeee6",
   },
 
   menteeName: { fontWeight: 950, fontSize: 16, marginBottom: 2 },
-  meta: { fontSize: 13, fontWeight: 700, opacity: 0.85 },
+  meta: { fontSize: 13, fontWeight: 750, opacity: 0.85 },
   metaSmall: { fontSize: 12, opacity: 0.7, marginTop: 2 },
 
   statusPillPending: {
@@ -300,13 +449,24 @@ const styles = {
   },
 
   pillsRow: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 },
+
+  pill: {
+    padding: "6px 10px",
+    borderRadius: 999,
+    background: "rgba(31, 95, 58, 0.12)",
+    border: "1px solid rgba(31, 95, 58, 0.18)",
+    fontSize: 12,
+    fontWeight: 900,
+    color: "#1f5f3a",
+  },
+
   pillSoft: {
     padding: "6px 10px",
     borderRadius: 999,
     background: "#f5fbf7",
     border: "1px solid #d3e7da",
     fontSize: 12,
-    fontWeight: 800,
+    fontWeight: 850,
   },
 
   note: { margin: "10px 0 0", fontSize: 13, lineHeight: 1.45, opacity: 0.9 },
