@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { mentors as seedMentors } from "../data/mentors.js";
+import { buildSmartReply } from "../utils/chatResponder.js";
 
 function createMessageId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -296,6 +297,26 @@ function normalizeGroupMessages(messages, activeThreadId, user) {
   return mineOnly.length === messages.length ? messages : mineOnly;
 }
 
+function normalizeBrokenReplies(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) return messages;
+
+  let changed = false;
+  const next = messages.map((message) => {
+    const text = String(message?.text || "");
+    const cleaned = text.replace(/\sIf you want, we can focus on\s[^.?!,]+,?\s*$/i, "");
+    const legacyCleaned = cleaned.replace(/\sOn\s[^.?!,]+,\s*$/i, "");
+
+    if (legacyCleaned !== text) {
+      changed = true;
+      return { ...message, text: legacyCleaned.trim() };
+    }
+
+    return message;
+  });
+
+  return changed ? next : messages;
+}
+
 function pickOne(items) {
   if (!Array.isArray(items) || items.length === 0) return "Sounds good.";
   return items[Math.floor(Math.random() * items.length)];
@@ -364,6 +385,73 @@ function buildContextualReply(baseText, userMessage) {
   return `${lead} ${baseText}`;
 }
 
+function detectCommunityTopic(text) {
+  const input = String(text || "").toLowerCase();
+
+  if (input.includes("cv") || input.includes("resume") || input.includes("portfolio")) {
+    return "cv";
+  }
+
+  if (
+    input.includes("interview") ||
+    input.includes("mock") ||
+    input.includes("star") ||
+    input.includes("behaviour") ||
+    input.includes("question")
+  ) {
+    return "interview";
+  }
+
+  if (input.includes("goal") || input.includes("plan") || input.includes("roadmap")) {
+    return "goals";
+  }
+
+  if (
+    input.includes("intern") ||
+    input.includes("job") ||
+    input.includes("role") ||
+    input.includes("apply") ||
+    input.includes("application") ||
+    input.includes("referral")
+  ) {
+    return "opportunities";
+  }
+
+  if (
+    input.includes("check") ||
+    input.includes("meeting") ||
+    input.includes("call") ||
+    input.includes("reply") ||
+    input.includes("ghost") ||
+    input.includes("mentor")
+  ) {
+    return "checkins";
+  }
+
+  if (
+    input.includes("stuck") ||
+    input.includes("confused") ||
+    input.includes("hard") ||
+    input.includes("difficult") ||
+    input.includes("worried")
+  ) {
+    return "concern";
+  }
+
+  return "general";
+}
+
+function inferRecentCommunityTopic(messages, userName) {
+  const recent = (Array.isArray(messages) ? messages : []).slice(-8).reverse();
+  for (const message of recent) {
+    if (!message?.text) continue;
+    if (!message?.name || message.name === userName) continue;
+    const topic = detectCommunityTopic(message.text);
+    if (topic !== "general") return topic;
+  }
+  return "general";
+}
+
 function getAutoReplyForThread(activeThread, user, directPartnerName, messageText, messages) {
   const normalizedMessage = String(messageText || "").toLowerCase();
   const recentReplyTexts = (Array.isArray(messages) ? messages : [])
@@ -371,43 +459,124 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
     .slice(-6)
     .map((message) => String(message.text || ""));
 
+  const isGreeting = /\b(hi|hello|hey|hii|heyy|yo)\b/i.test(normalizedMessage);
+  const isThanks = /\b(thanks|thank you|appreciate)\b/i.test(normalizedMessage);
+  const isQuestion = normalizedMessage.includes("?");
+  const isAffirmation = /^(yes|yeah|yep|sure|ok|okay|sounds good|lets|let's)\b/i.test(
+    normalizedMessage.trim(),
+  );
+
+  const explicitTopic = detectCommunityTopic(normalizedMessage);
+  const recentTopic = inferRecentCommunityTopic(messages, user.name);
+  const topic = explicitTopic !== "general" ? explicitTopic : isAffirmation ? recentTopic : "general";
+
   if (activeThread.type === "direct") {
-    if (normalizedMessage.includes("cv") || normalizedMessage.includes("resume")) {
+    if (isGreeting) {
       return {
         name: directPartnerName,
         text: pickNonRepeating(
           [
-            "Absolutely — send your CV and I’ll give you focused feedback today.",
-            "Great, share the latest CV draft and I’ll mark key improvements for impact.",
-            "Perfect, I’ll review your CV line-by-line and suggest concise edits.",
+            "Hey! Great to hear from you. What do you want us to focus on first this week?",
+            "Hi! Glad you messaged. Tell me what you need most help with right now.",
+            "Hey, good to connect. I’m here—what should we tackle together today?",
           ],
           recentReplyTexts,
         ),
       };
     }
 
-    if (normalizedMessage.includes("interview")) {
+    if (isThanks) {
       return {
         name: directPartnerName,
         text: pickNonRepeating(
           [
-            "Great, let’s do interview prep. I’ll send a few mock questions to start.",
-            "Nice focus — we can run a mock interview and review your answers right after.",
-            "Good call. Let’s practice behavioural and technical questions this week.",
+            "Anytime—happy to help. Send your next update and we’ll keep building momentum.",
+            "You’re welcome. Keep going and share progress when you’re ready.",
+            "No worries at all. I’m glad it helped—let’s keep moving.",
           ],
           recentReplyTexts,
         ),
       };
     }
 
-    if (normalizedMessage.includes("goal") || normalizedMessage.includes("plan")) {
+    if (topic === "cv") {
       return {
         name: directPartnerName,
         text: pickNonRepeating(
           [
-            "Let’s set one weekly goal and one measurable outcome so progress is clear.",
-            "Good idea — we can break your plan into small weekly milestones.",
-            "I like that. Let’s prioritize the top two goals for this week first.",
+            "Perfect, send your CV and I’ll give specific edits you can apply today.",
+            "Great call. Share the latest version and I’ll highlight what to improve first.",
+            "Yes—let’s work on your CV. I can help tighten your bullets and results language.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "interview") {
+      return {
+        name: directPartnerName,
+        text: pickNonRepeating(
+          [
+            "Great, let’s do interview prep. I’ll send mock questions and feedback after each answer.",
+            "Nice focus—we can run a mock interview and review what to improve immediately.",
+            "Good plan. Let’s practice behavioural and technical questions step by step.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "goals") {
+      return {
+        name: directPartnerName,
+        text: pickNonRepeating(
+          [
+            "Love that—let’s set one clear goal for this week and one measurable outcome.",
+            "Good idea. We can break your plan into smaller weekly milestones.",
+            "I like that direction. Let’s prioritize your top two goals first.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "opportunities") {
+      return {
+        name: directPartnerName,
+        text: pickNonRepeating(
+          [
+            "Great—send me the roles you’re targeting and I’ll help you prioritize them.",
+            "Nice, let’s narrow this to the best opportunities for your profile.",
+            "Good move. Share the listings and I’ll help tailor your approach.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "concern") {
+      return {
+        name: directPartnerName,
+        text: pickNonRepeating(
+          [
+            "I hear you. Let’s simplify this and focus on one step you can complete this week.",
+            "That’s normal—you’re not behind. We’ll tackle it one piece at a time.",
+            "Thanks for sharing that. Let’s make a small action plan so this feels manageable.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (isQuestion) {
+      return {
+        name: directPartnerName,
+        text: pickNonRepeating(
+          [
+            "Great question. I’d start with the highest-impact step, then we’ll build from there.",
+            "Good question—let’s do this in a simple sequence so it’s easier to execute.",
+            "That’s a smart ask. I’ll suggest a practical first step right now.",
           ],
           recentReplyTexts,
         ),
@@ -418,11 +587,11 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
       name: directPartnerName,
       text: pickNonRepeating(
         [
-          "Great point — let’s break that into 2 clear actions for this week.",
-          "Love that idea. Want to set a deadline for it by Friday?",
-          "That sounds good. I can help you prioritize the next steps.",
-          "Perfect, let’s focus on that first and review progress in our next check-in.",
-          "Makes sense — I’ll help you turn that into a practical action plan.",
+          "Makes sense. Let’s break that into two clear actions for this week.",
+          "I like that direction. Want to set a deadline so we stay accountable?",
+          "That sounds good. I’ll help you prioritize the next step first.",
+          "Perfect—let’s focus on that and review progress in our next check-in.",
+          "Great, we can turn that into a practical plan you can follow.",
         ],
         recentReplyTexts,
       ),
@@ -430,28 +599,42 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
   }
 
   if (activeThread.id === "mentee_group_checkins") {
-    if (normalizedMessage.includes("mentor") && normalizedMessage.includes("reply")) {
+    if (isGreeting) {
       return {
-        name: pickOne(["Mentee 2", "Mentee 3"]),
+        name: pickOne(["Mentee 1", "Mentee 2", "Mentee 3"]),
         text: pickNonRepeating(
           [
-            "I had this too — one weekly check-in message got much faster replies.",
-            "When I shared a short progress update, my mentor replied quicker.",
-            "A fixed check-in day made responses much more reliable for me.",
+            "Hey! Glad you posted—this group is super helpful for check-in ideas.",
+            "Hi! Good to have you here. Happy to share what worked for me.",
+            "Hey, welcome! Let’s figure this out together.",
           ],
           recentReplyTexts,
         ),
       };
     }
 
-    if (normalizedMessage.includes("meeting") || normalizedMessage.includes("call")) {
+    if (topic === "checkins") {
       return {
-        name: pickOne(["Mentee 3", "Mentee 1"]),
+        name: pickOne(["Mentee 2", "Mentee 3"]),
         text: pickNonRepeating(
           [
-            "Try locking one recurring 20-minute slot each week. It really helps.",
-            "We set a fixed weekly call and the momentum improved a lot.",
-            "Recurring calendar invites helped us stay consistent.",
+            "I had this too—one weekly check-in message got much faster replies.",
+            "When I sent short progress updates, my mentor started replying quicker.",
+            "A fixed check-in day made responses way more reliable for me.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "concern") {
+      return {
+        name: pickOne(["Mentee 1", "Mentee 2"]),
+        text: pickNonRepeating(
+          [
+            "I totally get that—I felt the same before we agreed one consistent weekly touchpoint.",
+            "You’re not alone. A short recurring check-in made things feel much less stressful for me.",
+            "That’s valid. It got better once I started sharing a weekly summary + one clear ask.",
           ],
           recentReplyTexts,
         ),
@@ -462,10 +645,10 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
       name: pickOne(["Mentee 1", "Mentee 2", "Mentee 3"]),
       text: pickNonRepeating(
         [
-          "I relate — setting a fixed check-in day improved consistency.",
-          "A short Friday progress update worked well for me.",
-          "Agree — sharing blockers early helped keep my mentor engaged.",
-          "I ask one clear question per update and get better responses.",
+          "I relate—setting a fixed check-in day improved consistency for me.",
+          "A short Friday progress update worked really well on my side.",
+          "Sharing blockers early helped keep my mentor engaged.",
+          "I send one clear question each update and usually get a better response.",
         ],
         recentReplyTexts,
       ),
@@ -473,32 +656,42 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
   }
 
   if (activeThread.id === "mentee_group_opportunities") {
-    if (
-      normalizedMessage.includes("intern") ||
-      normalizedMessage.includes("job") ||
-      normalizedMessage.includes("role")
-    ) {
+    if (isGreeting) {
       return {
-        name: pickOne(["Mentee 4", "Mentee 5"]),
+        name: pickOne(["Mentee 4", "Mentee 5", "Mentee 6"]),
         text: pickNonRepeating(
           [
-            "Great share — please post the link here and I’ll apply too.",
-            "Nice one, can you add the deadline and location for this role?",
-            "This is relevant for me too — I’ll apply and share my update here.",
+            "Hey! Nice to see you here—drop roles you find and we’ll all help each other.",
+            "Hi! Welcome to the opportunities thread 🙌",
+            "Hey! This is a great place to share internships and referrals.",
           ],
           recentReplyTexts,
         ),
       };
     }
 
-    if (normalizedMessage.includes("referral")) {
+    if (topic === "opportunities") {
       return {
         name: pickOne(["Mentee 4", "Mentee 5"]),
         text: pickNonRepeating(
           [
-            "Thanks! I can refer for one open role at my company if it matches.",
-            "Happy to refer where I can — share your CV and target role.",
-            "I may have a referral path too; I’ll confirm and update this chat.",
+            "Great find—please post the link and I’ll apply too.",
+            "Nice one, can you add deadline and location details?",
+            "This matches what I’m looking for too. I’ll apply and update here.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "cv") {
+      return {
+        name: pickOne(["Mentee 4", "Mentee 5"]),
+        text: pickNonRepeating(
+          [
+            "If you want, I can quickly review your CV before you apply.",
+            "Happy to swap CV feedback too—mine improved a lot after peer edits.",
+            "Let’s do CV checks here before submissions so we can improve hit rate.",
           ],
           recentReplyTexts,
         ),
@@ -509,10 +702,10 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
       name: pickOne(["Mentee 4", "Mentee 5", "Mentee 6"]),
       text: pickNonRepeating(
         [
-          "Nice one — I’ll add two more opportunities in a moment.",
-          "Super helpful, thank you for sharing this.",
-          "Great post — I’ll also share grad roles I bookmarked today.",
-          "This thread is useful, let’s keep all role links in one place.",
+          "Nice one—I’ll add two more opportunities in a bit.",
+          "Super helpful, thanks for sharing.",
+          "Great post. I’ll share grad roles I bookmarked today as well.",
+          "Let’s keep all role links in this thread so it’s easy to track.",
         ],
         recentReplyTexts,
       ),
@@ -520,32 +713,42 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
   }
 
   if (activeThread.id === "mentee_group_interviews") {
-    if (normalizedMessage.includes("mock") || normalizedMessage.includes("practice")) {
+    if (isGreeting) {
       return {
-        name: pickOne(["Mentee 6", "Mentee 7"]),
+        name: pickOne(["Mentee 6", "Mentee 7", "Mentee 8"]),
         text: pickNonRepeating(
           [
-            "I’m in — let’s run a 30-minute mock round tonight.",
-            "Count me in. We can do one interviewer/one candidate practice round.",
-            "Yes please — I can practice with you after 7pm.",
+            "Hey! Welcome—this chat is great for mock practice and feedback.",
+            "Hi! Jump in anytime, we run mock rounds pretty often here.",
+            "Hey there! Happy to practice together if you want.",
           ],
           recentReplyTexts,
         ),
       };
     }
 
-    if (
-      normalizedMessage.includes("star") ||
-      normalizedMessage.includes("question") ||
-      normalizedMessage.includes("behaviour")
-    ) {
+    if (topic === "interview") {
       return {
         name: pickOne(["Mentee 6", "Mentee 7"]),
         text: pickNonRepeating(
           [
-            "I’ve got a STAR answer sheet, happy to share it in this chat.",
-            "I can share behaviour question prompts and sample STAR structures.",
-            "I made a doc of common interview questions — I’ll drop it here.",
+            "I’m in—let’s run a 30-minute mock round tonight.",
+            "Count me in. We can do interviewer/candidate practice rounds.",
+            "Yes please, I can practice after 7pm if that works.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "concern") {
+      return {
+        name: pickOne(["Mentee 6", "Mentee 7"]),
+        text: pickNonRepeating(
+          [
+            "I get that—interviews stressed me out too. Mocking with others helped a lot.",
+            "Totally normal to feel that way. Practice made me way more confident.",
+            "You’re not alone. We can do low-pressure practice first and build up.",
           ],
           recentReplyTexts,
         ),
@@ -556,10 +759,10 @@ function getAutoReplyForThread(activeThread, user, directPartnerName, messageTex
       name: pickOne(["Mentee 6", "Mentee 7", "Mentee 8"]),
       text: pickNonRepeating(
         [
-          "Great topic — confidence improved a lot once I practiced out loud.",
+          "Great topic—confidence improved for me once I practiced out loud.",
           "Let’s collect common interview questions here and rehearse together.",
           "Practicing concise answers helped me stay calm in interviews.",
-          "I found timed mock rounds really useful before final interviews.",
+          "Timed mock rounds were really useful before my final interviews.",
         ],
         recentReplyTexts,
       ),
@@ -644,7 +847,8 @@ export default function Community() {
         user,
         directPartner.subtitle,
       );
-      const normalized = normalizeGroupMessages(directNormalized, activeThread.id, user);
+      const groupNormalized = normalizeGroupMessages(directNormalized, activeThread.id, user);
+      const normalized = normalizeBrokenReplies(groupNormalized);
       setMessages(normalized);
       if (normalized !== existing) {
         localStorage.setItem(storageKey, JSON.stringify(normalized));
@@ -675,18 +879,19 @@ export default function Community() {
     localStorage.setItem(storageKey, JSON.stringify(next));
     setText("");
 
-    const replyDraft = getAutoReplyForThread(
-      activeThread,
-      user,
-      directPartner.subtitle,
-      trimmed,
-      next,
-    );
+    const replyDraft = buildSmartReply({
+      message: trimmed,
+      persona: activeThread.type === "direct" ? "mentor-direct" : "mentee-peer",
+      threadId: activeThread.id,
+      recentMessages: next,
+      myName: user.name,
+      fallbackName: directPartner.subtitle,
+    });
     const replyStorageKey = storageKey;
     const replyThreadId = activeThread.id;
 
     window.setTimeout(() => {
-      const contextualText = buildContextualReply(replyDraft.text, trimmed);
+      const contextualText = replyDraft.text;
       const replyMessage = {
         id: createMessageId(),
         name: replyDraft.name,

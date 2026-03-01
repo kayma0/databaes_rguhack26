@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { buildSmartReply } from "../utils/chatResponder.js";
 
 function createMessageId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -171,6 +172,76 @@ function inferRecentMenteeTopic(messages, mentorName, menteeName) {
   return "general";
 }
 
+function detectMentorGroupTopic(text) {
+  const input = String(text || "").toLowerCase();
+
+  if (input.includes("check") || input.includes("session") || input.includes("cadence")) {
+    return "checkins";
+  }
+
+  if (input.includes("goal") || input.includes("plan") || input.includes("milestone")) {
+    return "goals";
+  }
+
+  if (input.includes("cv") || input.includes("resume") || input.includes("portfolio")) {
+    return "cv";
+  }
+
+  if (input.includes("template") || input.includes("resource") || input.includes("guide")) {
+    return "resources";
+  }
+
+  if (input.includes("interview") || input.includes("question") || input.includes("mock")) {
+    return "interview";
+  }
+
+  if (input.includes("pm") || input.includes("case") || input.includes("product")) {
+    return "cases";
+  }
+
+  if (
+    input.includes("stuck") ||
+    input.includes("hard") ||
+    input.includes("difficult") ||
+    input.includes("struggle")
+  ) {
+    return "concern";
+  }
+
+  return "general";
+}
+
+function inferRecentMentorGroupTopic(messages, mentorName) {
+  const recent = (Array.isArray(messages) ? messages : []).slice(-8).reverse();
+  for (const message of recent) {
+    if (!message?.text) continue;
+    if (!message?.name || message.name === mentorName) continue;
+    const topic = detectMentorGroupTopic(message.text);
+    if (topic !== "general") return topic;
+  }
+  return "general";
+}
+
+function normalizeBrokenReplies(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) return messages;
+
+  let changed = false;
+  const next = messages.map((message) => {
+    const text = String(message?.text || "");
+    const cleaned = text.replace(/\sIf you want, we can focus on\s[^.?!,]+,?\s*$/i, "");
+    const legacyCleaned = cleaned.replace(/\sOn\s[^.?!,]+,\s*$/i, "");
+
+    if (legacyCleaned !== text) {
+      changed = true;
+      return { ...message, text: legacyCleaned.trim() };
+    }
+
+    return message;
+  });
+
+  return changed ? next : messages;
+}
+
 function getMenteeReply(messageText, messages, mentorName, menteeName) {
   const normalizedMessage = String(messageText || "").toLowerCase();
   const recentReplyTexts = (Array.isArray(messages) ? messages : [])
@@ -335,29 +406,96 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
     .slice(-6)
     .map((message) => String(message.text || ""));
 
+  const isGreeting = /\b(hi|hello|hey|hii|heyy|yo)\b/i.test(normalizedMessage);
+  const isThanks = /\b(thanks|thank you|appreciate)\b/i.test(normalizedMessage);
+  const isQuestion = normalizedMessage.includes("?");
+  const isAffirmation = /^(yes|yeah|yep|sure|ok|okay|sounds good|lets|let's)\b/i.test(
+    normalizedMessage.trim(),
+  );
+
+  const explicitTopic = detectMentorGroupTopic(normalizedMessage);
+  const recentTopic = inferRecentMentorGroupTopic(messages, mentorName);
+  const topic = explicitTopic !== "general" ? explicitTopic : isAffirmation ? recentTopic : "general";
+
   if (activeGroupId === "mentor_group_strategy") {
-    if (normalizedMessage.includes("check-in") || normalizedMessage.includes("check in")) {
+    if (isGreeting) {
       return {
-        name: pickOne(["Mentor Ella", "Mentor David"]),
+        name: pickOne(["Mentor Ella", "Mentor Priya", "Mentor David"]),
         text: pickNonRepeating(
           [
-            "I do one structured check-in every 2 weeks and one async update in between.",
-            "I keep a weekly async update plus a deeper check-in every second week.",
-            "Short weekly check-ins have kept my mentees more accountable.",
+            "Hey! Great to see this discussion—happy to share what’s worked with my mentees.",
+            "Hi all, glad this topic came up. I’ve tested a few approaches here.",
+            "Hey team, I can share what improved consistency in my mentoring sessions.",
           ],
           recentReplyTexts,
         ),
       };
     }
 
-    if (normalizedMessage.includes("goal") || normalizedMessage.includes("plan")) {
+    if (isThanks) {
+      return {
+        name: pickOne(["Mentor Ella", "Mentor David"]),
+        text: pickNonRepeating(
+          [
+            "Anytime—glad it helped. Keep us posted on how it goes.",
+            "You’re welcome. Would love to hear your results next week.",
+            "Happy to help. Share an update once you test it.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "checkins") {
+      return {
+        name: pickOne(["Mentor Ella", "Mentor David"]),
+        text: pickNonRepeating(
+          [
+            "I do one structured check-in every two weeks plus a short async update weekly.",
+            "Weekly quick check-ins + one deeper session has worked best for me.",
+            "A fixed cadence made my mentees much more accountable.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "goals") {
       return {
         name: pickOne(["Mentor David", "Mentor Ella"]),
         text: pickNonRepeating(
           [
-            "A 30-day goal plan with weekly milestones has worked best for my mentees.",
-            "I align each mentee to one monthly objective and review weekly progress.",
-            "Goal plans work better when each step has a clear owner and deadline.",
+            "A 30-day plan with weekly milestones has worked really well for my mentees.",
+            "I align each mentee to one monthly objective and review progress weekly.",
+            "Goal plans land better when each step has a clear owner and deadline.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "concern") {
+      return {
+        name: pickOne(["Mentor Priya", "Mentor Ella"]),
+        text: pickNonRepeating(
+          [
+            "Totally get it. I narrow scope first, then focus on one measurable outcome.",
+            "I’ve been there too. A smaller weekly target helped me regain momentum.",
+            "That’s a common challenge—I’d simplify the plan and rebuild consistency.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (isQuestion) {
+      return {
+        name: pickOne(["Mentor Ella", "Mentor David"]),
+        text: pickNonRepeating(
+          [
+            "Great question. I’d start with cadence first, then layer in goal tracking.",
+            "Good ask—I’d prioritize one process change and test it for 2 weeks.",
+            "I’d begin with a simple structure, then add complexity only if needed.",
           ],
           recentReplyTexts,
         ),
@@ -368,9 +506,9 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
       name: pickOne(["Mentor Ella", "Mentor David", "Mentor Priya"]),
       text: pickNonRepeating(
         [
-          "Good point — I align mentee goals to one key outcome each month.",
+          "Good point—I align mentee goals to one key outcome each month.",
           "I keep a short action list after every session to maintain momentum.",
-          "I send session summaries right after calls so mentees stay on track.",
+          "I send session summaries after calls so mentees stay on track.",
           "Consistency improved once we agreed a fixed mentoring rhythm.",
         ],
         recentReplyTexts,
@@ -379,17 +517,27 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
   }
 
   if (activeGroupId === "mentor_group_resources") {
-    if (
-      normalizedMessage.includes("cv") ||
-      normalizedMessage.includes("resume") ||
-      normalizedMessage.includes("portfolio")
-    ) {
+    if (isGreeting) {
+      return {
+        name: pickOne(["Mentor Nina", "Mentor Amir", "Mentor Zoe"]),
+        text: pickNonRepeating(
+          [
+            "Hey! Happy to share resources—this thread has been useful for me too.",
+            "Hi all, great topic. I can drop a few templates that worked well.",
+            "Hey team, I’ve got docs I can share if helpful.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "cv") {
       return {
         name: pickOne(["Mentor Nina", "Mentor Amir"]),
         text: pickNonRepeating(
           [
             "I can share my CV review checklist template in this thread.",
-            "I have a resume scoring rubric I use for quick feedback cycles.",
+            "I use a resume scoring rubric for fast feedback cycles—happy to share.",
             "I can post the portfolio review framework I use with mentees.",
           ],
           recentReplyTexts,
@@ -397,14 +545,28 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
       };
     }
 
-    if (normalizedMessage.includes("template") || normalizedMessage.includes("guide")) {
+    if (topic === "resources") {
       return {
         name: pickOne(["Mentor Amir", "Mentor Nina"]),
         text: pickNonRepeating(
           [
-            "Great idea — I have a first-session guide I use with all new mentees.",
+            "Great idea—I have a first-session guide I use with new mentees.",
             "I’ll share my kickoff template and recurring agenda structure.",
             "I keep a simple mentoring guide that new mentors can reuse.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (isQuestion) {
+      return {
+        name: pickOne(["Mentor Nina", "Mentor Amir"]),
+        text: pickNonRepeating(
+          [
+            "Good question. I’d start with one reusable template and iterate from there.",
+            "I’d begin with a lightweight guide, then expand as patterns emerge.",
+            "I can share a minimal starter set that covers most use cases.",
           ],
           recentReplyTexts,
         ),
@@ -415,10 +577,10 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
       name: pickOne(["Mentor Nina", "Mentor Amir", "Mentor Zoe"]),
       text: pickNonRepeating(
         [
-          "Thanks for sharing — I’ll drop my mentoring resources doc here too.",
+          "Thanks for sharing—I’ll drop my mentoring resources doc here too.",
           "Useful note. I can add interview prep worksheets in this chat.",
           "I’ll upload my session prep checklist for everyone to reuse.",
-          "Nice resource — let’s keep a single shared thread of templates.",
+          "Nice resource. Let’s keep a single shared thread of templates.",
         ],
         recentReplyTexts,
       ),
@@ -426,7 +588,21 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
   }
 
   if (activeGroupId === "mentor_group_cases") {
-    if (normalizedMessage.includes("pm") || normalizedMessage.includes("case")) {
+    if (isGreeting) {
+      return {
+        name: pickOne(["Mentor Leo", "Mentor Zara", "Mentor Ian"]),
+        text: pickNonRepeating(
+          [
+            "Hey! Great to have you here—happy to compare case coaching approaches.",
+            "Hi all, love this topic. I can share what has worked in my sessions.",
+            "Hey team, I’ve tested a few mock-case formats and can post examples.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "cases") {
       return {
         name: pickOne(["Mentor Leo", "Mentor Zara"]),
         text: pickNonRepeating(
@@ -440,7 +616,7 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
       };
     }
 
-    if (normalizedMessage.includes("interview") || normalizedMessage.includes("question")) {
+    if (topic === "interview") {
       return {
         name: pickOne(["Mentor Zara", "Mentor Leo"]),
         text: pickNonRepeating(
@@ -448,6 +624,34 @@ function getMentorAutoReply(activeGroupId, messageText, messages, mentorName) {
             "I use a bank of layered interview questions. I’ll share a few examples now.",
             "I rotate foundational and stretch questions to calibrate candidate depth.",
             "I’ll share scenario-based interview prompts that worked well this term.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (topic === "concern") {
+      return {
+        name: pickOne(["Mentor Ian", "Mentor Leo"]),
+        text: pickNonRepeating(
+          [
+            "I hear you. I simplified my case format and mentee confidence improved quickly.",
+            "That’s fair—when mentees struggle, I reduce scope and focus on one framework first.",
+            "Been there. Short, focused drills worked better than long sessions for me.",
+          ],
+          recentReplyTexts,
+        ),
+      };
+    }
+
+    if (isQuestion) {
+      return {
+        name: pickOne(["Mentor Zara", "Mentor Leo"]),
+        text: pickNonRepeating(
+          [
+            "Great question. I’d start with structure clarity before depth.",
+            "I’d begin with timed drills, then add feedback loops.",
+            "Good ask—first optimize communication, then complexity.",
           ],
           recentReplyTexts,
         ),
@@ -537,7 +741,11 @@ export default function MentorCommunity() {
   useEffect(() => {
     const existing = safeRead(storageKey, null);
     if (existing && Array.isArray(existing)) {
-      setMessages(existing);
+      const normalized = normalizeBrokenReplies(existing);
+      setMessages(normalized);
+      if (normalized !== existing) {
+        localStorage.setItem(storageKey, JSON.stringify(normalized));
+      }
       return;
     }
 
@@ -563,18 +771,19 @@ export default function MentorCommunity() {
     localStorage.setItem(storageKey, JSON.stringify(next));
     setText("");
 
-    const replyDraft =
-      activeThread.type === "direct"
-        ? getMenteeReply(trimmed, next, mentor.name, currentMentee.name)
-        : getMentorAutoReply(activeGroup.id, trimmed, next, mentor.name);
+    const replyDraft = buildSmartReply({
+      message: trimmed,
+      persona: activeThread.type === "direct" ? "mentee-direct" : "mentor-peer",
+      threadId: activeThread.id,
+      recentMessages: next,
+      myName: mentor.name,
+      fallbackName: activeThread.type === "direct" ? currentMentee.name : undefined,
+    });
     const replyStorageKey = storageKey;
     const replyThreadId = activeThread.id;
 
     window.setTimeout(() => {
-      const contextualText =
-        activeThread.type === "direct"
-          ? replyDraft.text
-          : buildContextualReply(replyDraft.text, trimmed);
+      const contextualText = replyDraft.text;
       const replyMessage = {
         id: createMessageId(),
         name: replyDraft.name,
