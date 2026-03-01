@@ -8,7 +8,7 @@ export default function Home() {
       <div style={styles.logoWrap}>
         <img src={logoSrc} style={styles.logo} alt="Mentor Me logo" />
       </div>
-      <p style={styles.p}>Guidance for a better tomorrow</p>
+      <p style={styles.p}>Guidance for a Better Tomorrow</p>
       <Link to="/onboarding" style={styles.btnPrimary}>
         Click to begin
       </Link>
@@ -53,9 +53,9 @@ const styles = {
     opacity: 0.9,
     color: "#0c384e",
     textAlign: "center",
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: 600,
-    fontStyle: "italic",
+    fontFamily: "Times New Roman",
   },
   btnPrimary: {
     width: "100%",
