@@ -15,27 +15,54 @@ export default function Swipe() {
     }
   }, []);
 
-  const swipedMentorIds = new Set(swipes.map((s) => String(s.mentorId)));
+  const swipedMentorIds = useMemo(
+    () => new Set(swipes.map((s) => String(s.mentorId))),
+    [swipes],
+  );
 
-  // Load mentors safely
+  // Load stored mentors safely
   const storedMentors = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("mentorme_mentors") || "[]");
+      const parsed = JSON.parse(
+        localStorage.getItem("mentorme_mentors") || "[]",
+      );
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
   }, []);
-  const allMentors = storedMentors.length ? storedMentors : fallbackMentors;
+
+  // ✅ Merge: stored mentors first, then fallback mentors
+  // ✅ Remove duplicates by mentor.id
+  const allMentors = useMemo(() => {
+    const merged = [];
+    const seen = new Set();
+
+    const pushUnique = (m) => {
+      if (!m) return;
+      const id = m.id ?? m.email ?? `${m.name || ""}-${m.company || ""}`;
+      const key = String(id);
+      if (seen.has(key)) return;
+      seen.add(key);
+      merged.push({ ...m, id: m.id ?? key });
+    };
+
+    storedMentors.forEach(pushUnique);
+    fallbackMentors.forEach(pushUnique);
+
+    return merged;
+  }, [storedMentors]);
 
   // Available mentors that haven't been swiped
-  const availableMentors = useMemo(
-    () => allMentors.filter((mentor) => !swipedMentorIds.has(String(mentor.id))),
-    [allMentors, swipes]
-  );
+  const availableMentors = useMemo(() => {
+    return allMentors.filter(
+      (mentor) => !swipedMentorIds.has(String(mentor.id)),
+    );
+  }, [allMentors, swipedMentorIds]);
 
   // Reset index if availableMentors changes
   const [index, setIndex] = useState(0);
-  useEffect(() => setIndex(0), [availableMentors]);
+  useEffect(() => setIndex(0), [availableMentors.length]);
 
   const current = availableMentors[index];
 
@@ -44,7 +71,7 @@ export default function Swipe() {
   const [isDragging, setIsDragging] = useState(false);
 
   const [showPopup, setShowPopup] = useState(false);
-  const [requestedMentor, setRequestedMentor] = useState("");
+  const [popupText, setPopupText] = useState("");
 
   const startRef = useRef({ x: 0, y: 0 });
 
@@ -56,17 +83,21 @@ export default function Swipe() {
     return null;
   }, [dx]);
 
-  const recordSwipe = (decision) => {
-    if (!current) return;
+  const recordSwipe = (mentorId, decision) => {
     let saved = [];
     try {
       saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
-    } catch {}
+      if (!Array.isArray(saved)) saved = [];
+    } catch {
+      saved = [];
+    }
+
     saved.push({
-      mentorId: current.id,
+      mentorId,
       decision,
       at: new Date().toISOString(),
     });
+
     localStorage.setItem("mentor_swipes", JSON.stringify(saved));
   };
 
@@ -74,22 +105,27 @@ export default function Swipe() {
     if (!current) return;
 
     const decision = direction === "right" ? "request" : "pass";
-    setShowPopup(true);
-    recordSwipe(decision);
 
-    // Create request only on swipe right
+    recordSwipe(current.id, decision);
+
     if (direction === "right") {
-      setShowPopup(true)
-      setRequestedMentor(current.name);
+      setPopupText(`Request sent to ${current.name}`);
+      setShowPopup(true);
 
       let requests = [];
       try {
         requests = JSON.parse(localStorage.getItem("mentor_requests") || "[]");
-      } catch {}
+        if (!Array.isArray(requests)) requests = [];
+      } catch {
+        requests = [];
+      }
+
       let mentee = {};
       try {
         mentee = JSON.parse(localStorage.getItem("mentorme_mentee") || "{}");
-      } catch {}
+      } catch {
+        mentee = {};
+      }
 
       requests.push({
         id: crypto?.randomUUID?.() || String(Date.now()),
@@ -104,7 +140,7 @@ export default function Swipe() {
           firstName: mentee.firstName || "",
           lastName: mentee.lastName || "",
           email: mentee.email || "",
-          targetRole: mentee.role || "",
+          targetRole: mentee.targetRole || mentee.role || "",
           interests: mentee.interests || "",
           lookingFor: Array.isArray(mentee.lookingFor) ? mentee.lookingFor : [],
           cvName: mentee.cvName || null,
@@ -115,9 +151,12 @@ export default function Swipe() {
 
       localStorage.setItem("mentor_requests", JSON.stringify(requests));
 
-      setTimeout(() => setShowPopup(false), 2000);
+      setTimeout(() => setShowPopup(false), 1600);
+    } else {
+      setPopupText("Passed");
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 800);
     }
-
 
     const nextIndex = index + 1;
     if (nextIndex >= availableMentors.length) {
@@ -165,9 +204,7 @@ export default function Swipe() {
 
   return (
     <div style={styles.wrap}>
-      {showPopup && (
-        <div style={styles.popup}>Request sent to {requestedMentor}</div>
-      )}
+      {showPopup && <div style={styles.popup}>{popupText}</div>}
 
       <div style={styles.topBar}>
         <h2 style={styles.h2}>Mentor Matches</h2>
@@ -224,28 +261,40 @@ export default function Swipe() {
       <div style={styles.bottomNav}>
         <Link
           to="/roadmap"
-          style={{ ...styles.navItem, ...(isActive("/roadmap") && styles.active) }}
+          style={{
+            ...styles.navItem,
+            ...(isActive("/roadmap") && styles.active),
+          }}
         >
           🏠 <span style={styles.navLabel}>Home</span>
         </Link>
 
         <Link
           to="/swipe"
-          style={{ ...styles.navItem, ...(isActive("/swipe") && styles.active) }}
+          style={{
+            ...styles.navItem,
+            ...(isActive("/swipe") && styles.active),
+          }}
         >
           🔍 <span style={styles.navLabel}>Swipe</span>
         </Link>
 
         <Link
           to="/community"
-          style={{ ...styles.navItem, ...(isActive("/community") && styles.active) }}
+          style={{
+            ...styles.navItem,
+            ...(isActive("/community") && styles.active),
+          }}
         >
           👥 <span style={styles.navLabel}>Community</span>
         </Link>
 
         <Link
           to="/goals"
-          style={{ ...styles.navItem, ...(isActive("/goals") && styles.active) }}
+          style={{
+            ...styles.navItem,
+            ...(isActive("/goals") && styles.active),
+          }}
         >
           🎯 <span style={styles.navLabel}>Goals</span>
         </Link>
@@ -419,5 +468,5 @@ const styles = {
     fontWeight: 700,
     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
     zIndex: 999,
-},
+  },
 };
