@@ -11,6 +11,7 @@ import Notification from "./pages/Notification.jsx";
 import Goals from "./pages/Goals.jsx";
 
 import Community from "./pages/Community.jsx";
+import MentorCommunity from "./pages/MentorCommunity.jsx";
 
 import MentorDashboard from "./pages/MentorDashboard.jsx";
 import MentorGoals from "./pages/MentorGoals.jsx";
@@ -71,7 +72,7 @@ export default function App() {
       <Route
         path="/community"
         element={
-          <RequireRole allow={["mentee", "mentor"]}>
+          <RequireRole allow={["mentee"]}>
             <Community />
           </RequireRole>
         }
@@ -91,6 +92,14 @@ export default function App() {
         element={
           <RequireRole allow={["mentor"]}>
             <MentorGoals />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/mentor-community"
+        element={
+          <RequireRole allow={["mentor"]}>
+            <MentorCommunity />
           </RequireRole>
         }
       />

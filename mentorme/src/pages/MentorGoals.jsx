@@ -141,10 +141,10 @@ export default function MentorGoals() {
         </Link>
 
         <Link
-          to="/community"
+          to="/mentor-community"
           style={{
             ...styles.navItem,
-            ...(isActive("/community") && styles.active),
+            ...(isActive("/mentor-community") && styles.active),
           }}
         >
           👥 <span style={styles.navLabel}>Community</span>
