@@ -7,17 +7,30 @@ export default function Swipe() {
   const location = useLocation();
 
   // ✅ Use real mentors first (from mentor onboarding)
+  const swipes = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
+
+  const swipedMentorIds = new Set(
+  swipes.map((s) => String(s.mentorId))
+);
+
   const storedMentors = JSON.parse(
     localStorage.getItem("mentorme_mentors") || "[]",
   );
   const allMentors = storedMentors.length ? storedMentors : fallbackMentors;
 
-  const [index, setIndex] = useState(0);
-  const current = allMentors[index];
+  const availableMentors = useMemo(() => {
+  return allMentors.filter(mentor => !swipedMentorIds.has(String(mentor.id)));
+}, [allMentors, swipes]); // available mentors
 
   const [dx, setDx] = useState(0);
   const [dy, setDy] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+
+  const [index, setIndex] = useState(0);
+  const current = availableMentors[index]; // current mentors
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [requestedMentor, setRequestedMentor] = useState("");
 
   const startRef = useRef({ x: 0, y: 0 });
 
@@ -95,7 +108,7 @@ export default function Swipe() {
 
     const nextIndex = index + 1;
 
-    if (nextIndex >= allMentors.length) {
+    if (nextIndex >= availableMentors.length) {
       navigate("/roadmap");
       return;
     }
