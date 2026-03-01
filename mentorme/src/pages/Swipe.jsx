@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { mentors as fallbackMentors } from "../data/mentors.js";
 
@@ -6,28 +6,42 @@ export default function Swipe() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Use real mentors first (from mentor onboarding)
-  const swipes = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
+  // Load swipes safely
+  const swipes = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
+    } catch {
+      return [];
+    }
+  }, []);
 
-  const swipedMentorIds = new Set(
-  swipes.map((s) => String(s.mentorId))
-);
+  const swipedMentorIds = new Set(swipes.map((s) => String(s.mentorId)));
 
-  const storedMentors = JSON.parse(
-    localStorage.getItem("mentorme_mentors") || "[]",
-  );
+  // Load mentors safely
+  const storedMentors = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("mentorme_mentors") || "[]");
+    } catch {
+      return [];
+    }
+  }, []);
   const allMentors = storedMentors.length ? storedMentors : fallbackMentors;
 
-  const availableMentors = useMemo(() => {
-  return allMentors.filter(mentor => !swipedMentorIds.has(String(mentor.id)));
-}, [allMentors, swipes]); // available mentors
+  // Available mentors that haven't been swiped
+  const availableMentors = useMemo(
+    () => allMentors.filter((mentor) => !swipedMentorIds.has(String(mentor.id))),
+    [allMentors, swipes]
+  );
+
+  // Reset index if availableMentors changes
+  const [index, setIndex] = useState(0);
+  useEffect(() => setIndex(0), [availableMentors]);
+
+  const current = availableMentors[index];
 
   const [dx, setDx] = useState(0);
   const [dy, setDy] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-
-  const [index, setIndex] = useState(0);
-  const current = availableMentors[index]; // current mentors
 
   const [showPopup, setShowPopup] = useState(false);
   const [requestedMentor, setRequestedMentor] = useState("");
@@ -44,7 +58,10 @@ export default function Swipe() {
 
   const recordSwipe = (decision) => {
     if (!current) return;
-    const saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
+    let saved = [];
+    try {
+      saved = JSON.parse(localStorage.getItem("mentor_swipes") || "[]");
+    } catch {}
     saved.push({
       mentorId: current.id,
       decision,
@@ -60,23 +77,25 @@ export default function Swipe() {
     setShowPopup(true);
     recordSwipe(decision);
 
-    // Create request only when swiping RIGHT
+    // Create request only on swipe right
     if (direction === "right") {
-      const requests = JSON.parse(
-        localStorage.getItem("mentor_requests") || "[]",
-      );
+      setShowPopup(true)
+      setRequestedMentor(current.name);
 
-      const mentee = JSON.parse(
-        localStorage.getItem("mentorme_mentee") || "{}",
-      );
+      let requests = [];
+      try {
+        requests = JSON.parse(localStorage.getItem("mentor_requests") || "[]");
+      } catch {}
+      let mentee = {};
+      try {
+        mentee = JSON.parse(localStorage.getItem("mentorme_mentee") || "{}");
+      } catch {}
 
       requests.push({
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        id: crypto?.randomUUID?.() || String(Date.now()),
         mentorId: current.id,
         mentorName: current.name,
         mentorCompany: current.company,
-
-        // ✅ FULL mentee details saved inside request
         mentee: {
           name:
             mentee.name ||
@@ -90,24 +109,17 @@ export default function Swipe() {
           lookingFor: Array.isArray(mentee.lookingFor) ? mentee.lookingFor : [],
           cvName: mentee.cvName || null,
         },
-
-        status: "pending", // pending | accepted | declined
+        status: "pending",
         at: new Date().toISOString(),
       });
 
-      
       localStorage.setItem("mentor_requests", JSON.stringify(requests));
+
+      setTimeout(() => setShowPopup(false), 2000);
     }
 
-      // Show popup
-      setRequestedMentor(current.name);
-
-      setTimeout(() => {
-      setShowPopup(false);
-      }, 2000);
 
     const nextIndex = index + 1;
-
     if (nextIndex >= availableMentors.length) {
       navigate("/roadmap");
       return;
@@ -154,10 +166,9 @@ export default function Swipe() {
   return (
     <div style={styles.wrap}>
       {showPopup && (
-        <div style={styles.popup}>
-          Request sent to {requestedMentor} 
-        </div>
+        <div style={styles.popup}>Request sent to {requestedMentor}</div>
       )}
+
       <div style={styles.topBar}>
         <h2 style={styles.h2}>Mentor Matches</h2>
         <div style={styles.sub}>Swipe right to request</div>
@@ -210,44 +221,31 @@ export default function Swipe() {
         )}
       </div>
 
-      {/* Roadmap-style Bottom Navbar */}
       <div style={styles.bottomNav}>
         <Link
           to="/roadmap"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/roadmap") && styles.active),
-          }}
+          style={{ ...styles.navItem, ...(isActive("/roadmap") && styles.active) }}
         >
           🏠 <span style={styles.navLabel}>Home</span>
         </Link>
 
         <Link
           to="/swipe"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/swipe") && styles.active),
-          }}
+          style={{ ...styles.navItem, ...(isActive("/swipe") && styles.active) }}
         >
           🔍 <span style={styles.navLabel}>Swipe</span>
         </Link>
 
         <Link
           to="/community"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/community") && styles.active),
-          }}
+          style={{ ...styles.navItem, ...(isActive("/community") && styles.active) }}
         >
           👥 <span style={styles.navLabel}>Community</span>
         </Link>
 
         <Link
           to="/goals"
-          style={{
-            ...styles.navItem,
-            ...(isActive("/goals") && styles.active),
-          }}
+          style={{ ...styles.navItem, ...(isActive("/goals") && styles.active) }}
         >
           🎯 <span style={styles.navLabel}>Goals</span>
         </Link>
