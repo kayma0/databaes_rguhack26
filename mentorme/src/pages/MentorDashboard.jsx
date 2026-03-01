@@ -8,7 +8,7 @@ export default function MentorDashboard() {
   const [requests, setRequests] = useState([]);
   const [tick, setTick] = useState(0);
 
-  // ✅ Load mentor profile (and re-load when we patch it)
+  //  Load mentor profile (and re-load when we patch it)
   const mentor = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("mentorme_mentor") || "{}");
@@ -17,7 +17,7 @@ export default function MentorDashboard() {
     }
   }, [tick]);
 
-  // ✅ Resolve mentor ID even for older mentors that don't have id saved
+  //  Resolve mentor ID even for older mentors that don't have id saved
   const resolvedMentorId = useMemo(() => {
     if (mentor?.id) return mentor.id;
 
@@ -59,7 +59,7 @@ export default function MentorDashboard() {
     return null;
   }, [mentor]);
 
-  // ✅ Load requests repeatedly so UI updates even in the same tab
+  // Load requests repeatedly so UI updates even in the same tab
   useEffect(() => {
     const load = () => {
       try {
@@ -87,7 +87,7 @@ export default function MentorDashboard() {
     };
   }, []);
 
-  // ✅ Requests for this mentor
+  // Requests for this mentor
   const myRequests = useMemo(() => {
     const mentorName =
       mentor?.name ||
@@ -121,7 +121,7 @@ export default function MentorDashboard() {
     all[idx] = updatedReq;
     localStorage.setItem("mentor_requests", JSON.stringify(all));
 
-    // ✅ If accepted, create mentee notification
+    // If accepted, create mentee notification
     if (status === "accepted") {
       const notif = {
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
@@ -335,10 +335,10 @@ export default function MentorDashboard() {
         </Link>
 
         <Link
-          to="/community"
+          to="/mentor-community"
           style={{
             ...styles.navItem,
-            ...(isActive("/community") && styles.active),
+            ...(isActive("/mentor-community") && styles.active),
           }}
         >
           👥
