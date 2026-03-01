@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 export default function Roadmap() {
   const navigate = useNavigate();
   const location = useLocation();
+  const roadmapImageSrc = `${import.meta.env.BASE_URL}roadmap4.png`;
 
   const mentee = JSON.parse(localStorage.getItem("mentorme_mentee") || "{}");
   const firstName = mentee.firstName || "there";
@@ -26,7 +27,7 @@ export default function Roadmap() {
         <h1 style={styles.hello}>Hello, {firstName}!</h1>
         <h2 style={styles.title}>Here is your roadmap</h2>
 
-        <img src="/roadmap4.png" alt="Roadmap" style={styles.roadmapImage} />
+        <img src={roadmapImageSrc} alt="Roadmap" style={styles.roadmapImage} />
       </div>
 
       {/* Bottom Navigation */}
