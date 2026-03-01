@@ -249,6 +249,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export default function Onboarding() {
   const nav = useNavigate();
 
@@ -297,6 +306,9 @@ export default function Onboarding() {
   }
 
   function handleContinue() {
+    const compactPhotoData =
+      mentorPhotoData && mentorPhotoData.length <= 250000 ? mentorPhotoData : "";
+
     // unified user record (useful later for role-based routing)
     const user = {
       userType,
@@ -310,14 +322,14 @@ export default function Onboarding() {
       lookingFor,
       interests,
       cvName: cvFile?.name || null,
-      mentorPhotoData: mentorPhotoData || null,
+      mentorPhotoData: null,
     };
 
-    localStorage.setItem("mentorme_user", JSON.stringify(user));
+    safeSetItem("mentorme_user", JSON.stringify(user));
 
     // ✅ mentee flow (keep your existing storage so nothing breaks)
     if (userType === "mentee") {
-      localStorage.setItem(
+      safeSetItem(
         "mentorme_mentee",
         JSON.stringify({
           name: `${firstName} ${lastName}`.trim(),
@@ -349,10 +361,10 @@ export default function Onboarding() {
       industry,
       company,
       bio,
-      img: mentorPhotoData,
+      img: compactPhotoData,
     };
 
-    localStorage.setItem("mentorme_mentor", JSON.stringify(mentor));
+    safeSetItem("mentorme_mentor", JSON.stringify(mentor));
 
     // ✅ push mentor into swipe pool (so mentees see real mentors)
     const existing = JSON.parse(
@@ -370,7 +382,7 @@ export default function Onboarding() {
       img: mentor.img,
     };
 
-    localStorage.setItem(
+    safeSetItem(
       "mentorme_mentors",
       JSON.stringify([newMentor, ...existing]),
     );
@@ -381,7 +393,7 @@ export default function Onboarding() {
   const canContinueCommon = firstName && lastName && email;
 
   const canContinueMentor =
-    canContinueCommon && role && industry && company && bio && mentorPhotoData;
+    canContinueCommon && role && industry && company && bio;
 
   const canContinueMentee = canContinueCommon;
 
