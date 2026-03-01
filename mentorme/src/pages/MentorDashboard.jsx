@@ -168,11 +168,6 @@ export default function MentorDashboard() {
 
         <div style={styles.profileCard}>
           <div style={styles.profileTop}>
-<<<<<<< Updated upstream
-            <div style={styles.avatar}>
-              {(mentor.firstName?.[0] || mentor.name?.[0] || "M").toUpperCase()}
-            </div>
-=======
             {mentor.img ? (
               <img
                 src={mentor.img}
@@ -188,7 +183,6 @@ export default function MentorDashboard() {
                 ).toUpperCase()}
               </div>
             )}
->>>>>>> Stashed changes
             <div>
               <div style={styles.profileName}>
                 {mentor.name || "Your profile"}
@@ -404,6 +398,15 @@ const styles = {
     background: "#e8f3ec",
     color: "#1f5f3a",
     border: "1px solid #cfe3d7",
+  },
+
+  avatarImage: {
+    width: 46,
+    height: 46,
+    borderRadius: 999,
+    objectFit: "cover",
+    border: "1px solid #cfe3d7",
+    background: "#f3f7f5",
   },
 
   profileName: { fontWeight: 950, fontSize: 16 },
