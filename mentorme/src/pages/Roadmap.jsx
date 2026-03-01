@@ -50,10 +50,9 @@ export default function Roadmap() {
           <span style={styles.navLabel}>Community</span>
         </Link>
 
-        {/* THIS IS CHAT / REQUESTS */}
-        <Link to="/chat" style={styles.navItem}>
-          💬
-          <span style={styles.navLabel}>Requests</span>
+        <Link to="/goals" style={styles.navItem}>
+          🎯
+          <span style={styles.navLabel}>Goals</span>
         </Link>
       </div>
     </div>
@@ -69,7 +68,6 @@ const styles = {
     display: "grid",
     gridTemplateRows: "auto 1fr auto",
     gap: 18,
-    position: "relative",
     background: "linear-gradient(165deg, #f5fbf7 0%, #e4f2e8 100%)",
     color: "#023047",
   },
@@ -160,14 +158,13 @@ const styles = {
   },
 
   backBtn: {
-    position: "absolute",
-    top: 20,
-    left: 20,
+    justifySelf: "start",
     border: "none",
     borderTop: "1px solid #d3e7da",
     color: "#ffffff",
     background: "#1f5f3a",
     padding: "8px 14px",
+    marginBottom: 2,
     borderRadius: 12,
     fontWeight: 700,
     cursor: "pointer",

@@ -123,10 +123,13 @@ export default function Notification() {
         </Link>
 
         <Link
-          to="/chat"
-          style={{ ...styles.navItem, ...(isActive("/chat") && styles.active) }}
+          to="/goals"
+          style={{
+            ...styles.navItem,
+            ...(isActive("/goals") && styles.active),
+          }}
         >
-          💬 <span style={styles.navLabel}>Requests</span>
+          🎯 <span style={styles.navLabel}>Goals</span>
         </Link>
       </div>
     </div>

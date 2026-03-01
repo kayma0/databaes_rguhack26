@@ -168,9 +168,17 @@ export default function MentorDashboard() {
 
         <div style={styles.profileCard}>
           <div style={styles.profileTop}>
-            <div style={styles.avatar}>
-              {(mentor.firstName?.[0] || mentor.name?.[0] || "M").toUpperCase()}
-            </div>
+            {mentor.img ? (
+              <img
+                src={mentor.img}
+                alt={mentor.name || "Mentor profile"}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <div style={styles.avatar}>
+                {(mentor.firstName?.[0] || mentor.name?.[0] || "M").toUpperCase()}
+              </div>
+            )}
             <div>
               <div style={styles.profileName}>
                 {mentor.name || "Your profile"}
@@ -332,14 +340,6 @@ export default function MentorDashboard() {
           👥
           <span style={styles.navLabel}>Community</span>
         </Link>
-
-        <Link
-          to="/chat"
-          style={{ ...styles.navItem, ...(isActive("/chat") && styles.active) }}
-        >
-          💬
-          <span style={styles.navLabel}>Requests</span>
-        </Link>
       </div>
     </div>
   );
@@ -383,6 +383,15 @@ const styles = {
     background: "#e8f3ec",
     color: "#1f5f3a",
     border: "1px solid #cfe3d7",
+  },
+
+  avatarImage: {
+    width: 46,
+    height: 46,
+    borderRadius: 999,
+    objectFit: "cover",
+    border: "1px solid #cfe3d7",
+    boxShadow: "0 4px 10px rgba(2, 48, 71, 0.12)",
   },
 
   profileName: { fontWeight: 950, fontSize: 16 },

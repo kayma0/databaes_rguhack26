@@ -8,9 +8,9 @@ import Welcome from "./pages/Welcome.jsx";
 import Roadmap from "./pages/Roadmap.jsx";
 import Swipe from "./pages/Swipe.jsx";
 import Notification from "./pages/Notification.jsx";
+import Goals from "./pages/Goals.jsx";
 
 import Community from "./pages/Community.jsx";
-import Chat from "./pages/Chat.jsx";
 
 import MentorDashboard from "./pages/MentorDashboard.jsx";
 
@@ -57,6 +57,14 @@ export default function App() {
           </RequireRole>
         }
       />
+      <Route
+        path="/goals"
+        element={
+          <RequireRole allow={["mentee"]}>
+            <Goals />
+          </RequireRole>
+        }
+      />
 
       {/* SHARED */}
       <Route
@@ -64,14 +72,6 @@ export default function App() {
         element={
           <RequireRole allow={["mentee", "mentor"]}>
             <Community />
-          </RequireRole>
-        }
-      />
-      <Route
-        path="/chat"
-        element={
-          <RequireRole allow={["mentee", "mentor"]}>
-            <Chat />
           </RequireRole>
         }
       />
