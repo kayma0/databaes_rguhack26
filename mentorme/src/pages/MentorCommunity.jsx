@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { buildSmartReply } from "../utils/chatResponder.js";
 
 function createMessageId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -729,29 +728,13 @@ export default function MentorCommunity() {
           type: "direct",
         };
 
-  const storageKey = useMemo(
-    () => `mentorme_mentor_community_${activeThread.id}`,
-    [activeThread.id],
-  );
-
   useEffect(() => {
     activeThreadIdRef.current = activeThread.id;
   }, [activeThread.id]);
 
   useEffect(() => {
-    const existing = safeRead(storageKey, null);
-    if (existing && Array.isArray(existing)) {
-      const normalized = normalizeBrokenReplies(existing);
-      setMessages(normalized);
-      if (normalized !== existing) {
-        localStorage.setItem(storageKey, JSON.stringify(normalized));
-      }
-      return;
-    }
-
     setMessages([]);
-    localStorage.setItem(storageKey, JSON.stringify([]));
-  }, [storageKey]);
+  }, [activeThread.id]);
 
   function send() {
     const trimmed = text.trim();
@@ -768,39 +751,7 @@ export default function MentorCommunity() {
     ];
 
     setMessages(next);
-    localStorage.setItem(storageKey, JSON.stringify(next));
     setText("");
-
-    const replyDraft = buildSmartReply({
-      message: trimmed,
-      persona: activeThread.type === "direct" ? "mentee-direct" : "mentor-peer",
-      threadId: activeThread.id,
-      recentMessages: next,
-      myName: mentor.name,
-      fallbackName: activeThread.type === "direct" ? currentMentee.name : undefined,
-    });
-    const replyStorageKey = storageKey;
-    const replyThreadId = activeThread.id;
-
-    window.setTimeout(() => {
-      const contextualText = replyDraft.text;
-      const replyMessage = {
-        id: createMessageId(),
-        name: replyDraft.name,
-        text: contextualText,
-        at: new Date().toISOString(),
-      };
-
-      const existingForThread = safeRead(replyStorageKey, []);
-      const existingList = Array.isArray(existingForThread) ? existingForThread : [];
-      const nextWithReply = [...existingList, replyMessage];
-
-      localStorage.setItem(replyStorageKey, JSON.stringify(nextWithReply));
-
-      if (activeThreadIdRef.current === replyThreadId) {
-        setMessages(nextWithReply);
-      }
-    }, 850);
   }
 
   return (

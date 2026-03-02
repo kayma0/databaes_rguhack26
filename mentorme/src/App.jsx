@@ -17,14 +17,36 @@ import MentorDashboard from "./pages/MentorDashboard.jsx";
 import MentorGoals from "./pages/MentorGoals.jsx";
 
 import RequireRole from "./components/RequireRole.jsx";
+import PublicOnly from "./components/PublicOnly.jsx";
 
 export default function App() {
   return (
     <Routes>
       {/* Public */}
-      <Route path="/" element={<Home />} />
-      <Route path="/menu" element={<Menu />} />
-      <Route path="/onboarding" element={<Onboarding />} />
+      <Route
+        path="/"
+        element={
+          <PublicOnly>
+            <Home />
+          </PublicOnly>
+        }
+      />
+      <Route
+        path="/menu"
+        element={
+          <PublicOnly>
+            <Menu />
+          </PublicOnly>
+        }
+      />
+      <Route
+        path="/onboarding"
+        element={
+          <PublicOnly>
+            <Onboarding />
+          </PublicOnly>
+        }
+      />
 
       {/* MENTEE ONLY */}
       <Route

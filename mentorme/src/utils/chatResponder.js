@@ -264,9 +264,26 @@ function forceDifferentText(baseText, recentTexts) {
 }
 
 function withTopic(base, topics) {
-  const top = topics[0];
-  if (!top) return base;
-  return `${base} If you want, we can focus on ${top} first.`;
+  return base;
+}
+
+function ensureNonEmptySentence(text, persona) {
+  const cleaned = String(text || "").replace(/\s+/g, " ").trim();
+  if (cleaned) return /[.!?]$/.test(cleaned) ? cleaned : `${cleaned}.`;
+
+  if (persona === "mentor-direct") {
+    return "Great, let’s work on that together.";
+  }
+
+  if (persona === "mentee-direct") {
+    return "Sounds good, I’ll work on that and update you.";
+  }
+
+  if (persona === "mentor-peer") {
+    return "Good point, thanks for sharing that.";
+  }
+
+  return "I relate to that, thanks for sharing.";
 }
 
 function buildMenteePeerReply({ topicGroup, topics }) {
@@ -558,7 +575,7 @@ export function buildSmartReply({
     ),
   );
   const selected = pickNonRepeating(candidates, recentTexts);
-  const text = forceDifferentText(selected, recentTexts);
+  const text = ensureNonEmptySentence(forceDifferentText(selected, recentTexts), persona);
 
   return {
     name: getNameForPersona(persona, threadId, fallbackName),

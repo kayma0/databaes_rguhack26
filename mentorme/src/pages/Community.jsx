@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { mentors as seedMentors } from "../data/mentors.js";
-import { buildSmartReply } from "../utils/chatResponder.js";
 
 function createMessageId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -832,34 +831,14 @@ export default function Community() {
     }
   }, [user.role]);
 
-  const storageKey = useMemo(() => `mentorme_chat_${activeThread.id}`, [activeThread.id]);
-
   useEffect(() => {
     activeThreadIdRef.current = activeThread.id;
   }, [activeThread.id]);
 
   useEffect(() => {
-    const existing = safeRead(storageKey, null);
-    if (existing && Array.isArray(existing) && existing.length) {
-      const directNormalized = normalizeDirectGreeting(
-        existing,
-        activeThread.id,
-        user,
-        directPartner.subtitle,
-      );
-      const groupNormalized = normalizeGroupMessages(directNormalized, activeThread.id, user);
-      const normalized = normalizeBrokenReplies(groupNormalized);
-      setMessages(normalized);
-      if (normalized !== existing) {
-        localStorage.setItem(storageKey, JSON.stringify(normalized));
-      }
-      return;
-    }
-
     const seeded = initialMessagesForThread(activeThread.id, user, directPartner.subtitle);
     setMessages(seeded);
-    localStorage.setItem(storageKey, JSON.stringify(seeded));
-  }, [activeThread.id, storageKey, user, directPartner.subtitle]);
+  }, [activeThread.id, user, directPartner.subtitle]);
 
   function send() {
     const trimmed = text.trim();
@@ -876,39 +855,7 @@ export default function Community() {
     ];
 
     setMessages(next);
-    localStorage.setItem(storageKey, JSON.stringify(next));
     setText("");
-
-    const replyDraft = buildSmartReply({
-      message: trimmed,
-      persona: activeThread.type === "direct" ? "mentor-direct" : "mentee-peer",
-      threadId: activeThread.id,
-      recentMessages: next,
-      myName: user.name,
-      fallbackName: directPartner.subtitle,
-    });
-    const replyStorageKey = storageKey;
-    const replyThreadId = activeThread.id;
-
-    window.setTimeout(() => {
-      const contextualText = replyDraft.text;
-      const replyMessage = {
-        id: createMessageId(),
-        name: replyDraft.name,
-        text: contextualText,
-        at: new Date().toISOString(),
-      };
-
-      const existingForThread = safeRead(replyStorageKey, []);
-      const existingList = Array.isArray(existingForThread) ? existingForThread : [];
-      const nextWithReply = [...existingList, replyMessage];
-
-      localStorage.setItem(replyStorageKey, JSON.stringify(nextWithReply));
-
-      if (activeThreadIdRef.current === replyThreadId) {
-        setMessages(nextWithReply);
-      }
-    }, 850);
   }
 
   return (
