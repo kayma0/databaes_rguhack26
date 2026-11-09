@@ -25,7 +25,7 @@ export default function Roadmap() {
       {/* Main Content */}
       <div style={styles.content}>
         <h1 style={styles.hello}>Hello, {firstName}!</h1>
-        <h2 style={styles.title}>Here is your roadmap</h2>
+        <h2 style={styles.title}>Here is your roadmap:</h2>
 
         <img src={roadmapImageSrc} alt="Roadmap" style={styles.roadmapImage} />
       </div>
